@@ -1,0 +1,56 @@
+---
+import Navbar from "../components/Navbar.astro";
+import AspectSelector from "../components/AspectSelector.jsx";
+import NicknameInput from "../components/NicknameInput.astro";
+import PlayButton from "../components/PlayButton.astro";
+import Logo from "../components/Logo.astro";
+---
+
+<Navbar />
+<main class="main-container">
+  <div class="column left-column">
+    <AspectSelector client:load/>
+  </div>
+  <div class="column center-column">
+    <Logo />
+    <div class="form-container">
+      <NicknameInput />
+      <PlayButton />
+    </div>
+  </div>
+  <div class="column right-column">
+    <!-- Esta columna está vacía -->
+  </div>
+</main>
+
+<style>
+.main-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Tres columnas iguales */
+  align-items: center; /* Alinea verticalmente */
+  justify-items: center; /* Centra el contenido en cada columna */
+  height: 100vh; /* Ocupa toda la pantalla */
+}
+
+/* Columna izquierda (Selector de aspecto) */
+.left-column {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Columna central (Logo, Input y Botón) */
+.center-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Columna derecha (Vacía) */
+.right-column {
+  /* No necesita estilos, solo ocupa espacio */
+}
+
+</style>
+
