@@ -1,0 +1,28 @@
+---
+export let progress = 45; // Valor de la barra de progreso (por defecto 45%)
+---
+
+<div class="progress-container">
+  <div class="progress-bar" style={`width: ${progress}%;`}>{progress}%</div>
+</div>
+
+<style>
+.progress-container {
+  width: 200px; /* Más ancho */
+  height: 12px; /* Más corto */
+  background-color: #444; /* Color de fondo */
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4A90E2, #357ABD);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 12px; /* Centra el texto */
+  border-radius: 6px;
+}
+</style>
