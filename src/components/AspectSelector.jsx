@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const images = [
-  { src: "/images/aspectos/processed_aspecto1.png", label: "España" },
+  { src: "/images/aspectos/processed_aspecto1.png", label: "Espagna" },
   { src: "/images/aspectos/processed_aspecto2.png", label: "Donut" },
   { src: "/images/aspectos/processed_aspecto3.png", label: "Rosquilla" },
   { src: "/images/aspectos/processed_aspecto4.png", label: "Futbol" },
