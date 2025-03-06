@@ -1,7 +1,7 @@
 ---
 import ProgressBar from "../components/ProgressBar.astro";
 
-const usuarioRegistrado = false; // Si es true, se muestra el botón; si es false, la barra de progreso
+const usuarioRegistrado = true; // Si es true, se muestra el botón; si es false, la barra de progreso
 ---
 
 <nav class="navbar">
@@ -12,11 +12,15 @@ const usuarioRegistrado = false; // Si es true, se muestra el botón; si es fals
       <span class="username">Guest</span>
     </div>
 
+
     {usuarioRegistrado ? (
-      <button type="button" class="register-btn">Registrate</button>
+      <a href="/login" class="register-btn">
+        Registrate
+      </a>
     ) : (
       <ProgressBar progress={75} />
     )}
+
 
   </div>
 

@@ -1,0 +1,245 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: url('../../../public/images/fondos/loginfondo.gif') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .grid-container {
+            display: grid;
+            place-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+        .form-container {
+            border: 2px solid white;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeIn 0.5s ease-out forwards;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+        }
+        .logo {
+            width: 100px;
+            margin: 0 auto 10px auto;
+            display: block;
+        }
+        .input-group {
+            margin-top: 1rem;
+        }
+        .password-group, .submit-group, .forgot-group {
+            opacity: 0;
+            transform: translateY(-20px);
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out, max-height 0.5s ease-out;
+        }
+        .password-group.show, .submit-group.show, .forgot-group.show {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 100px;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          const emailInput = document.querySelector("#email");
+          const passwordGroup = document.querySelector(".password-group");
+          const loginButtonGroup = document.querySelector(".submit-group");
+          const forgotGroup = document.querySelector(".forgot-group");
+
+
+          if (emailInput && passwordGroup && loginButtonGroup && forgotGroup) {
+              emailInput.addEventListener("click", function () {
+                  passwordGroup.classList.add("show");
+                  loginButtonGroup.classList.add("show");
+                  forgotGroup.classList.add("show");
+              });
+          }
+      });
+    </script>
+</head>
+<body>
+    <div class="grid-container">
+        <div class="form-container">
+            <img src="../../../public/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
+            <h1 class="title">Iniciar Sesión</h1>
+            <form class="form" action="/login" method="POST">
+                <div class="input-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="input-group password-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="input-group forgot-group">
+                    <a href="/forgot-password">¿Olvidaste tu contraseña?</a>
+                </div>
+                <div class="input-group submit-group">
+                  <button type="submit" class="sign">Iniciar Sesión</button>
+                </div>
+            </form>
+            <p class="signup">¿No tienes una cuenta? <a href="/register">Regístrate</a></p>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+<style>
+	/* From Uiverse.io by Yaya12085 */ 
+.form-container {
+  width: 320px;
+  border-radius: 0.75rem;
+  background-color: rgba(17, 24, 39, 1);
+  padding: 2rem;
+  color: rgba(243, 244, 246, 1);
+}
+
+.title {
+  text-align: center;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+.form {
+  margin-top: 1.5rem;
+}
+
+.input-group {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.logo {
+  width: 100px;
+  margin-bottom: 10px;
+  margin-left: 78px;
+}
+.input-group label {
+  display: block;
+  color: rgba(156, 163, 175, 1);
+  margin-bottom: 4px;
+}
+
+.input-group input {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(55, 65, 81, 1);
+  outline: 0;
+  background-color: rgba(17, 24, 39, 1);
+  padding: 0.75rem 1rem;
+  color: rgba(243, 244, 246, 1);
+}
+
+.input-group input:focus {
+  border-color: rgba(167, 139, 250);
+}
+
+.forgot {
+  display: flex;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgba(156, 163, 175,1);
+  margin: 8px 0 14px 0;
+}
+
+.forgot a,.signup a {
+  color: rgba(243, 244, 246, 1);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot a:hover, .signup a:hover {
+  text-decoration: underline rgba(167, 139, 250, 1);
+}
+
+.sign {
+  display: block;
+  width: 100%;
+  background-color: rgba(167, 139, 250, 1);
+  padding: 0.75rem;
+  text-align: center;
+  color: rgba(17, 24, 39, 1);
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 600;
+}
+
+.social-message {
+  display: flex;
+  align-items: center;
+  padding-top: 1rem;
+}
+
+.line {
+  height: 1px;
+  flex: 1 1 0%;
+  background-color: rgba(55, 65, 81, 1);
+}
+
+.social-message .message {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgba(156, 163, 175, 1);
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+}
+
+.social-icons .icon {
+  border-radius: 0.125rem;
+  padding: 0.75rem;
+  border: none;
+  background-color: transparent;
+  margin-left: 8px;
+}
+
+.social-icons .icon svg {
+  height: 1.25rem;
+  width: 1.25rem;
+  fill: #fff;
+}
+
+.signup {
+  margin-top: 19px;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgba(156, 163, 175, 1);
+}
+
+</style>
+
