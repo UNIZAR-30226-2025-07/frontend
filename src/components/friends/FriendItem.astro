@@ -1,0 +1,84 @@
+---
+const { name, status } = Astro.props;
+---
+
+<div class="friend-item">
+  <div class="friend-info">
+    <span class="friend-name"><strong>{name}</strong></span>
+    <span class="friend-status">{status}</span>
+  </div>
+  <button class="remove-btn">
+    <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
+  </button>
+</div>
+
+<style>
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #888;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+/* 🔹 Información del amigo en fila */
+.friend-info {
+  display: flex;
+  flex-direction: row; /* Hace que el nombre y la conexión estén en una sola línea */
+  align-items: center;
+  gap: 15px; /* Espacio entre el nombre y la última conexión */
+}
+
+.friend-name {
+  font-size: 18px;
+}
+
+/* 🔹 Última conexión alineada a la derecha */
+.friend-status {
+  color: #ddd;
+  font-size: 14px;
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+/* 🔹 BOTÓN DE ELIMINAR CON CÍRCULO ROJO */
+.remove-btn {
+  background: none;
+  border: 2px solid red; /* Borde rojo */
+  border-radius: 50%; /* Hace el botón circular */
+  padding: 8px; /* Espacio alrededor del ícono */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Ajustar tamaño del icono */
+.remove-btn img {
+  width: 20px;
+}
+
+/* 🔹 Efecto hover */
+.remove-btn:hover {
+  background: rgba(255, 0, 0, 0.2); /* Fondo rojo suave al pasar el mouse */
+  transform: scale(1.1); /* Efecto de agrandamiento */
+}
+
+/* 🔹 Ajustes para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .friend-item {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .remove-btn {
+    padding: 6px;
+  }
+
+  .remove-btn img {
+    width: 18px;
+  }
+}
+</style>
