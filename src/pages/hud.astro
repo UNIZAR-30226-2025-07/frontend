@@ -1,0 +1,19 @@
+---
+import Hud from '../components/hud/hud.jsx';
+---
+<!-- Se carga el componente en el cliente -->
+<div client:load>
+  <Hud />
+</div>
+
+<!-- Estilos globales para los bloques HUD -->
+<style global>
+  .hud-box {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    font-family: Arial, sans-serif;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+</style>
