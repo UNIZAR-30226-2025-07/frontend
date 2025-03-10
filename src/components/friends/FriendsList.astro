@@ -1,182 +1,217 @@
 ---
 import FriendItem from "./FriendItem.astro";
+import Logo from "../../components/Logo.astro";
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
 ---
+
 <head>
   <meta charset="UTF-8">
 </head>
-<div class="friends-container">
-  <div class="header">
-    <a astro-link href="/" class="button">
-      <img src="/images/volver.png" alt="Volver" />
-    </a>    
+
+<Layout />
+
+<!-- NAVBAR OCUPANDO TODO EL ANCHO -->
+<div class="navbar-container">
+  <Navbar />
+</div>
+
+<!-- LOGO SUPERPUESTO AL NAVBAR -->
+<div class="logo-container">
+  <Logo />
+</div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="container">
+  <header class="header">
     <h2 class="title">AMIGOS</h2>
-  </div>
-  
+  </header>
+
+  <!-- TABS -->
   <div class="tabs">
-    <h3 class="title">Lista de amigos</h3>
     <button class="tab active">
-      Solicitudes <img src="/images/amigos/aceptar_amigos.png" alt="Solicitudes" />
+      <img src="/images/amigos/aceptar_amigos.png" alt="Solicitudes" class="icon" />
+      <span>Solicitudes</span>
       <span class="badge">3</span>
     </button>
     <button class="tab">
-      Añadir amigos <img src="/images/amigos/agregar_amigos.png" alt="Añadir" />
+      <img src="/images/amigos/agregar_amigos.png" alt="Añadir" class="icon" />
+      <span>Añadir amigos</span>
+    </button>
+    <button class="tab">
+      <img src="/images/amigos/partida_privada.png" alt="Partida Privada" class="icon" />
+      <span>Partida Privada</span>
     </button>
   </div>
 
+  <!-- LISTA DE AMIGOS -->
   <div class="friends-list">
     <h3>Lista de amigos</h3>
     <FriendItem name="Hector" status="En línea hace 5 horas" />
     <FriendItem name="David" status="En línea hace 8 horas" />
     <FriendItem name="Daniel" status="En línea hace 9 horas" />
-    <FriendItem name="Hugo" status="En línea hace 13 horas" />
   </div>
 </div>
 
 <style>
-/* 🔹 Asegurar que el fondo cubre toda la pantalla */
-body, html {
+/* 🔹 RESET GENERAL */
+* {
   margin: 0;
   padding: 0;
-  height: 100%;
-  background: #2c0045; /* Color de fondo general */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  box-sizing: border-box;
 }
 
-/* 🔹 Ajuste para que el contenedor no deje espacios en la parte superior/inferior */
-.friends-container {
-  width: 90%;
-  max-width: 900px;
-  min-height: 90vh; /* Al menos el 90% de la pantalla */
+/* 🔹 ELIMINAR SCROLL HORIZONTAL */
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  background-color: #282032;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  background: rgba(44, 0, 69, 0.9); /* Fondo semitransparente */
-  align-items: center; /* Centrado vertical */
+  align-items: center;
 }
 
-/* 🔹 TABS en tres columnas */
-.tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr; /* Tres columnas iguales */
+/* 🔹 NAVBAR OCUPANDO TODO EL ANCHO */
+.navbar-container {
+  width: 100%;
+  position: sticky; /* 🔹 AHORA SE MUEVE CON EL SCROLL */
+  top: 0;
+  left: 0;
+  background: #282032;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+Navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+/* 🔹 LOGO SUPERPUESTO AL NAVBAR */
+.logo-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  z-index: 1001; /* Más alto que la NavBar */
+  display: flex;
+  justify-content: center;
   align-items: center;
+  width: 100%;
+  gap: 20px; /* Espacio entre elementos */
+}
+
+.logo-container img {
+  width: 120px; /* Ajustar tamaño si es necesario */
+  height: auto;
+}
+
+/* 🔹 CONTENEDOR PRINCIPAL */
+.container {
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #282032;
+  padding: 20px;
+  margin-top: 80px; /* Ajuste para que no tape la NavBar */
+}
+
+/* 🔹 CABECERA */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  margin-top: -70px;
+}
+
+.title {
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* 🔹 TABS OCUPANDO TODO EL ANCHO */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 800px;
   background: #3e005a;
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 20px;
-  width: 145%;
 }
 
-/* 🔹 Primera columna: "Lista de amigos" alineado a la izquierda */
-.tabs .title {
-  text-align: left;
-  margin-left: 20px; /* Ajuste de margen */
-}
-
-/* 🔹 Botones ocupan sus respectivas columnas */
 .tab {
   background: #57257a;
   color: white;
   border: none;
-  font-size: 14px; /* Tamaño de letra más compacto */
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px; /* Espaciado reducido */
-  padding: 6px 10px; /* Menos padding para reducir el fondo */
+  gap: 10px;
+  padding: 12px 20px;
   border-radius: 12px;
   transition: background 0.3s ease;
+  flex: 1; /* 🔹 Distribuye el espacio equitativamente */
   justify-content: center;
-  min-width: 12px; /* Ancho mínimo del botón */
-  width: 150px;
-  justify-self: end;
 }
 
-.tab img {
+.tab:hover {
+  background: #282032;
+}
+
+.icon {
   width: 24px;
+  height: auto;
 }
 
-/* 🔹 BADGE */
 .badge {
   background: green;
   color: white;
-  padding: 3px 6px;
+  padding: 3px 8px;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* 🔹 LISTA DE AMIGOS */
 .friends-list {
   background: #666;
-  padding: 20px; /* Más espacio interno */
+  padding: 20px;
   border-radius: 10px;
   text-align: left;
-  width: 200%; /* Ocupar todo el ancho disponible */
-  max-width: 900px; /* Ajusta el tamaño máximo si es necesario */
-}
-
-/* 🔹 Título "AMIGOS" estilizado */
-.title {
-  color: white;
-  font-size: 28px;
-  font-weight: bold;
-  text-align: center;
-  flex-grow: 1; /* Permite que el título ocupe todo el espacio posible */
-  margin: 0; /* Elimina márgenes que puedan afectar el centrado */
-}
-
-/* 🔹 Contenedor del botón y el título */
-.header {
-  display: flex;
-  align-items: center;
   width: 100%;
-  justify-content: center; /* Centra horizontalmente */
-  margin-bottom: 20px;
-  position: relative;
+  max-width: 800px;
 }
 
-/* 🔹 Botón de volver */
-.button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  transition: 0.3s;
-  position: absolute;
-  left: 0; /* Lo mantiene alineado a la izquierda */
-  margin-left: -130px;
-}
-
-.button img {
-  width: 35px; /* Ajusta el tamaño del icono */
-}
-
-.button:hover {
-  opacity: 0.7;
-}
-
-@media (max-width: 1200px) {
-  .friends-container {
-    width: 90%;
-  }
-}
-
+/* 🔹 RESPONSIVE */
 @media (max-width: 768px) {
-  .friends-container {
-    width: 95%;
-    padding: 15px;
-  }
-
   .tabs {
-    grid-template-columns: 1fr; /* En pantallas pequeñas, cambia a una sola columna */
-    gap: 10px; /* Espacio entre los elementos */
+    flex-direction: column;
+    width: 90%;
   }
 
   .tab {
-    font-size: 14px;
+    width: 100%;
+  }
+
+  .friends-list {
+    width: 90%;
+  }
+
+  .logo-container img {
+    width: 100px;
   }
 }
 </style>
