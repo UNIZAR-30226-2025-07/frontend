@@ -8,9 +8,10 @@ const StoreComponent = () => {
       alignItems: "center",
       justifyContent: "center",
       height: "100vh",
-      background: "#2c0045",
+      background: "#282032",
       color: "white",
       fontFamily: "Arial, sans-serif",
+      marginTop: "160px",
     },
     header: {
       display: "flex",
@@ -18,7 +19,7 @@ const StoreComponent = () => {
       justifyContent: "space-between",
       width: "100%",
       maxWidth: "700px",
-      marginBottom: "20px",
+      marginTop: "-110px",
     },
     backButton: {
       background: "none",
@@ -42,7 +43,7 @@ const StoreComponent = () => {
       background: "#4b2375",
       borderRadius: "15px",
       width: "90%",
-      maxWidth: "900px",
+      maxWidth: "800px",
     },
     itemsGrid: {
       display: "grid",
@@ -93,9 +94,6 @@ const StoreComponent = () => {
     <div style={styles.container}>
       {/* 🔹 Encabezado con botón de volver */}
       <div style={styles.header}>
-        <a href="../" style={styles.backButton}>
-          <img src="/images/volver.png" alt="Volver" style={{ width: "35px" }} />
-        </a>
         <h1 style={styles.title}>Tienda</h1>
       </div>
 
