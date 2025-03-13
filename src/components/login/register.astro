@@ -15,8 +15,8 @@
           const passwordGroup = document.querySelector(".password-group");
           const loginButtonGroup = document.querySelector(".submit-group");
           const loginForm = document.querySelector(".form");
-
-          if (!emailInput || !passwordInput || !passwordGroup || !loginButtonGroup || !loginForm) {
+          const forgotGroup = document.querySelector(".forgot-group");
+          if (!emailInput || !passwordInput || !passwordGroup || !loginButtonGroup || !loginForm || !forgotGroup) {
               console.error("❌ Uno o más elementos del formulario no se encontraron en el DOM."); //Depuración
               return;
           }
@@ -33,6 +33,7 @@
           emailInput.addEventListener("click", function () {
               passwordGroup.classList.add("show");
               loginButtonGroup.classList.add("show");
+              forgotGroup.classList.add("show");
           });
 
           loginForm.addEventListener("submit", async function (event) {
@@ -90,7 +91,7 @@
           <h1 class="title">Iniciar Sesión</h1>
           <form class="form" action="/login" method="POST">
               <div class="input-group">
-                  <label for="email">Introduzca su correo Electrónico</label>
+                  <label for="email">Introduzca su correo electrónico</label>
                   <input type="email" id="email" name="email" required>
               </div>
               <div class="input-group password-group">
