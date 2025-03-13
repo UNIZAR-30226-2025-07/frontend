@@ -12,7 +12,7 @@ const ConfigurationItem = () => {
       alignItems: "center",
       justifyContent: "center",
       height: "100vh",
-      background: "#2c0045",
+      background: "#282032",
       position: "relative",
     },
     header: {
@@ -21,7 +21,7 @@ const ConfigurationItem = () => {
       justifyContent: "space-between", // 🔹 Asegura que la flecha y el texto mantengan su espacio
       width: "100%",
       maxWidth: "500px", // 🔹 Limita la expansión del header para evitar que se separen demasiado
-      marginBottom: "20px",
+      marginBottom: "80px",
     },
     button: {
       background: "none",
@@ -37,14 +37,15 @@ const ConfigurationItem = () => {
       fontSize: "32px",
       fontWeight: "bold",
       textAlign: "center",
-      flexGrow: 1, // 🔹 Permite que el texto ocupe el espacio restante sin mover la flecha
+      flexGrow: 1, 
+      margginTop: "7px",
     },
     
     panel: {
       background: "#200030",
       padding: "25px",
       borderRadius: "15px",
-      width: "500px",
+      width: "800px",
       minHeight: "320px",
       display: "flex",
       flexDirection: "column",
@@ -69,7 +70,7 @@ const ConfigurationItem = () => {
       paddingRight: "15px",
     },
     slider: {
-      width: "200px",
+      width: "400px",
       height: "5px",
       background: "white",
       borderRadius: "5px",
@@ -84,7 +85,7 @@ const ConfigurationItem = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      border: "3px solid blue",
+      border: "3px solid red",
       cursor: "pointer",
     },
     toggleButtonActive: {
@@ -95,10 +96,7 @@ const ConfigurationItem = () => {
   return (
     <div style={styles.settingsContainer}>
       {/* 🔹 Botón de volver y título */}
-      <div style={styles.header}>
-        <a href="../" style={styles.button}>
-          <img src="/images/volver.png" alt="Volver" style={{ width: "35px" }} />
-        </a>    
+      <div style={styles.header}>   
         <h2 style={styles.title}>CONFIGURACIÓN</h2>
       </div>
 
