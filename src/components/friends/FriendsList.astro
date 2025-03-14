@@ -1,8 +1,10 @@
 ---
-import FriendItem from "./FriendItem.astro";
+
+import FriendItem from "./FriendItem.tsx";
 import Logo from "../../components/Logo.astro";
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
+
 ---
 
 <head>
@@ -29,7 +31,7 @@ import Navbar from "../../components/Navbar.astro";
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active">
+    <button class="tab active" onclick="window.location.href='http://localhost:4321/requests'">
       <img src="/images/amigos/aceptar_amigos.png" alt="Solicitudes" class="icon" />
       <span>Solicitudes</span>
       <span class="badge">3</span>
@@ -38,20 +40,41 @@ import Navbar from "../../components/Navbar.astro";
       <img src="/images/amigos/agregar_amigos.png" alt="Añadir" class="icon" />
       <span>Añadir amigos</span>
     </button>
-    <button class="tab">
-      <img src="/images/amigos/partida_privada.png" alt="Partida Privada" class="icon" />
-      <span>Partida Privada</span>
-    </button>
+    <div class="tab-dropdown">
+      <button class="tab" id="private-match-btn">
+        <img src="/images/amigos/partida_privada.png" alt="Partida Privada" class="icon" />
+        <span>Partida Privada</span>
+      </button>
+      <div class="dropdown-menu" id="dropdown-menu">
+        <button class="dropdown-item">Crear Partida</button>
+        <button class="dropdown-item">Unirse a Partida</button>
+      </div>
+    </div>
   </div>
 
-  <!-- LISTA DE AMIGOS -->
-  <div class="friends-list">
-    <h3>Lista de amigos</h3>
-    <FriendItem name="Hector" status="En línea hace 5 horas" />
-    <FriendItem name="David" status="En línea hace 8 horas" />
-    <FriendItem name="Daniel" status="En línea hace 9 horas" />
-  </div>
+  <!-- Renderizamos el componente React -->
+  <FriendItem />
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const privateMatchBtn = document.getElementById("private-match-btn");
+    const dropdown = document.getElementById("dropdown-menu");
+
+    if (privateMatchBtn && dropdown) {
+        privateMatchBtn.addEventListener("click", function () {
+            dropdown.classList.toggle("show");
+        });
+
+        document.addEventListener("click", function (event) {
+            const target = event.target as Node; // 🔹 Asegura que event.target es un Node
+            if (!privateMatchBtn.contains(target) && !dropdown.contains(target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    }
+});
+</script>
 
 <style>
 /* 🔹 RESET GENERAL */
@@ -183,6 +206,45 @@ Navbar {
   padding: 3px 8px;
   border-radius: 50%;
   font-size: 14px;
+}
+
+/* 🔹 DROPDOWN */
+.tab-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%; /* 🔹 Mueve el menú a la derecha */
+  background: #57257a;
+  border-radius: 10px;
+  overflow: hidden;
+  width: max-content; /* 🔹 Para que se ajuste al contenido */
+  min-width: 150px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
+  background: #57257a;
+  color: white;
+  border: none;
+  font-size: 14px;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background: #3e005a;
 }
 
 /* 🔹 LISTA DE AMIGOS */
