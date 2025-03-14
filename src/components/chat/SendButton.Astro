@@ -1,0 +1,40 @@
+<form class="max-w-sm mx-auto">
+    <div class="flex items-center">
+        <!-- Botón de Enviar -->
+        <button 
+            id="send-message-button"
+            class="shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-white bg-blue-500 border border-blue-700 rounded-s-lg hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300"
+            type="button"
+            onclick="sendMessage()"
+        >
+            Enviar
+        </button>
+
+        <!-- Campo de entrada de mensaje -->
+        <div class="relative w-full">
+            <input 
+                type="text" 
+                id="message-input" 
+                class="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-0 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" 
+                placeholder="Escribe un mensaje..." 
+                required 
+                onkeydown="if(event.key === 'Enter') sendMessage()"
+            />
+        </div>
+    </div>
+</form>
+
+<script>
+function sendMessage() {
+    const inputField = document.getElementById("message-input") as HTMLInputElement;
+    
+    if (inputField) {
+        const message = inputField.value.trim();
+
+        if (message !== "") {
+            console.log("Mensaje enviado:", message); // Aquí puedes hacer un fetch para enviarlo al backend
+            inputField.value = ""; // Limpiar campo después de enviar
+        }
+    }
+}
+</script>
