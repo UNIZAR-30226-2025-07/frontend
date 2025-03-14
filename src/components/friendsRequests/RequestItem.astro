@@ -1,15 +1,24 @@
 ---
-const { name, status } = Astro.props;
+const { name } = Astro.props;
 ---
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap">
+</head>
 
 <div class="friend-item">
   <div class="friend-info">
     <span class="friend-name"><strong>{name}</strong></span>
-    <span class="friend-status">{status}</span>
   </div>
-  <button class="remove-btn">
-    <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
-  </button>
+  <div class="friend-actions">
+    <button class="add-btn">
+      <img src="/images/amigos/aceptar_amigos.png" alt="Aceptar" />
+    </button>
+    <button class="remove-btn">
+      <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
+    </button>
+  </div>
 </div>
 
 <style>
@@ -32,7 +41,9 @@ const { name, status } = Astro.props;
 }
 
 .friend-name {
-  font-size: 18px;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 28px;
+  letter-spacing: 1px; /* Opcional: mejora la legibilidad */
 }
 
 /* 🔹 Última conexión alineada a la derecha */
@@ -64,6 +75,36 @@ const { name, status } = Astro.props;
 .remove-btn:hover {
   background: rgba(255, 0, 0, 0.2); /* Fondo rojo suave al pasar el mouse */
   transform: scale(1.1); /* Efecto de agrandamiento */
+}
+
+/* 🔹 BOTÓN DE ACEPTAR CON CÍRCULO VERDE */
+.add-btn {
+  background: none;
+  border: 2px solid green; /* Borde rojo */
+  border-radius: 50%; /* Hace el botón circular */
+  padding: 8px; /* Espacio alrededor del ícono */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Ajustar tamaño del icono */
+.add-btn img {
+  width: 20px;
+}
+
+/* 🔹 Efecto hover */
+.add-btn:hover {
+  background: rgba(55, 191, 27, 0.2); /* Fondo rojo suave al pasar el mouse */
+  transform: scale(1.1); /* Efecto de agrandamiento */
+}
+
+/* 🔹 Contenedor de botones */
+.friend-actions {
+  display: flex;
+  gap: 10px;
 }
 
 /* 🔹 Ajustes para pantallas más pequeñas */

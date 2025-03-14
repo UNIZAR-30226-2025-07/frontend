@@ -1,0 +1,68 @@
+/* 🔹 Estilo del título "Chat" */
+.chat-title {
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    font-family: 'Luckiest Guy', cursive;
+    letter-spacing: 1px;
+    margin-bottom: 20px; /* 🔹 Espacio entre el título y el chat */
+  }
+  
+  /* 🔹 Contenedor del chat */
+  .chat-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* 🔹 Caja de mensajes con fondo morado */
+  .chat-box {
+    width: 100%;
+    height: 400px;
+    background-color: #3e005a;
+    border-radius: 10px;
+    padding: 15px;
+    overflow-y: auto;
+  }
+  
+  /* 🔹 Mensajes dentro del chat */
+  .message {
+    color: white;
+    margin-bottom: 8px;
+  }
+  
+  /* 🔹 Formulario de entrada de mensajes */
+  .chat-form {
+    display: flex;
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  /* 🔹 Input del chat */
+  .chat-input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    outline: none;
+  }
+  
+  /* 🔹 Botón de enviar */
+  .chat-button {
+    background-color: #3e005a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+  }
+  
+  .chat-button:hover {
+    background-color: #57257a;
+  }
+  
