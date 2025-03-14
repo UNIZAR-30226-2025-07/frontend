@@ -1,0 +1,221 @@
+---
+import FriendItem from "./RequestItem.astro";
+import Logo from "../../components/Logo.astro";
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+---
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap">
+</head>
+
+<Layout />
+
+<!-- NAVBAR OCUPANDO TODO EL ANCHO -->
+<div class="navbar-container">
+  <Navbar />
+</div>
+
+<!-- LOGO SUPERPUESTO AL NAVBAR -->
+<div class="logo-container">
+  <Logo />
+</div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="container">
+  <header class="header">
+    <h2 class="title">SOLICITUDES DE AMISTAD</h2>
+  </header>
+
+  <!-- TABS 
+  <div class="tabs">
+    <button class="tab active">
+      <img src="/images/amigos/aceptar_amigos.png" alt="Solicitudes" class="icon" />
+      <span>Solicitudes</span>
+      <span class="badge">3</span>
+    </button>
+    <button class="tab">
+      <img src="/images/amigos/agregar_amigos.png" alt="Añadir" class="icon" />
+      <span>Añadir amigos</span>
+    </button>
+    <button class="tab">
+      <img src="/images/amigos/partida_privada.png" alt="Partida Privada" class="icon" />
+      <span>Partida Privada</span>
+    </button>
+  </div>
+  -->
+
+  <!-- LISTA DE AMIGOS -->
+  <div class="friends-list">
+    <h3>Solicitudes de amistad entrantes</h3>
+    <FriendItem name="Hector" status="En línea hace 5 horas" />
+    <FriendItem name="David" status="En línea hace 8 horas" />
+    <FriendItem name="Daniel" status="En línea hace 9 horas" />
+  </div>
+</div>
+
+<style>
+/* 🔹 RESET GENERAL */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🔹 ELIMINAR SCROLL HORIZONTAL */
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  background-color: #282032;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 🔹 NAVBAR OCUPANDO TODO EL ANCHO */
+.navbar-container {
+  width: 100%;
+  position: sticky; /* 🔹 AHORA SE MUEVE CON EL SCROLL */
+  top: 0;
+  left: 0;
+  background: #282032;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+Navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+/* 🔹 LOGO SUPERPUESTO AL NAVBAR */
+.logo-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  z-index: 1001; /* Más alto que la NavBar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 20px; /* Espacio entre elementos */
+}
+
+.logo-container img {
+  width: 120px; /* Ajustar tamaño si es necesario */
+  height: auto;
+}
+
+/* 🔹 CONTENEDOR PRINCIPAL */
+.container {
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #282032;
+  padding: 20px;
+  margin-top: 80px; /* Ajuste para que no tape la NavBar */
+}
+
+/* 🔹 CABECERA */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  margin-top: -70px;
+}
+
+.title {
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 1px; /* Opcional: mejora la legibilidad */
+}
+
+/* 🔹 TABS OCUPANDO TODO EL ANCHO */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 800px;
+  background: #3e005a;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  background: #57257a;
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  transition: background 0.3s ease;
+  flex: 1; /* 🔹 Distribuye el espacio equitativamente */
+  justify-content: center;
+}
+
+.tab:hover {
+  background: #282032;
+}
+
+.icon {
+  width: 24px;
+  height: auto;
+}
+
+.badge {
+  background: green;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+/* 🔹 LISTA DE AMIGOS */
+.friends-list {
+  background: #666;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: left;
+  width: 100%;
+  max-width: 800px;
+}
+
+/* 🔹 RESPONSIVE */
+@media (max-width: 768px) {
+  .tabs {
+    flex-direction: column;
+    width: 90%;
+  }
+
+  .tab {
+    width: 100%;
+  }
+
+  .friends-list {
+    width: 90%;
+  }
+
+  .logo-container img {
+    width: 100px;
+  }
+}
+</style>
