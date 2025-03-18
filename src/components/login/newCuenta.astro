@@ -4,109 +4,138 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro</title>
-    <link rel="stylesheet" href="/styles.css">
-    
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-          const registerForm = document.querySelector(".form");
-          if (!registerForm) return;
-          
-          let errorMessage = document.getElementById("error-message");
-          if (!errorMessage) {
-              errorMessage = document.createElement("p");
-              errorMessage.id = "error-message";
-              errorMessage.style.color = "red";
-              errorMessage.style.display = "none";
-              registerForm.appendChild(errorMessage);
-          }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Cuenta</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const emailInput = document.querySelector("#email") as HTMLInputElement | null;
+      const usernameInput = document.querySelector("#username") as HTMLInputElement | null;
+      const passwordGroups = document.querySelectorAll(".password-group");
+      const signupButtonGroup = document.querySelector(".submit-group");
+      const signupForm = document.querySelector(".form");
 
-          registerForm.addEventListener("submit", async function (event) {
-              event.preventDefault();
+      if (!emailInput || !usernameInput || !signupButtonGroup || !signupForm || passwordGroups.length === 0) {
+        console.error("❌ Uno o más elementos del formulario no se encontraron en el DOM.");
+        return;
+      }
 
-              const emailInput = document.querySelector("#email") as HTMLInputElement;
-              const passwordInput = document.querySelector("#password") as HTMLInputElement;
-              const passwordGroup = document.querySelector(".password-group");
-              const confirmPasswordGroup = document.querySelector(".password-group");
-              const confirmPasswordInput = document.querySelector("#confirm-password") as HTMLInputElement;
-              
-              if (!emailInput || !passwordInput || !confirmPasswordInput) {
-                  console.error("Uno o más campos del formulario no se encontraron en el DOM.");
-                  return;
-              }
-              
-              const email = emailInput.value.trim();
-              const password = passwordInput.value.trim();
-              const confirmPassword = confirmPasswordInput.value.trim();
+      let errorMessage = document.getElementById("error-message") as HTMLParagraphElement | null;
+      if (!errorMessage) {
+        errorMessage = document.createElement("p");
+        errorMessage.id = "error-message";
+        errorMessage.style.color = "red";
+        errorMessage.style.display = "none";
+        signupForm.appendChild(errorMessage);
+      }
 
-              if (!email || !password || !confirmPassword) {
-                  errorMessage.textContent = "Por favor, complete todos los campos.";
-                  errorMessage.style.display = "block";
-                  return;
-              }
-
-              if (password !== confirmPassword) {
-                  errorMessage.textContent = "Las contraseñas no coinciden.";
-                  errorMessage.style.display = "block";
-                  return;
-              }
-
-              try {
-                  const response = await fetch("http://localhost:3000/auth/sign-in", {
-                      method: "POST",
-                      headers: {
-                          "Content-Type": "application/json"
-                      },
-                      body: JSON.stringify({ email, password })
-                  });
-
-                  const data = await response.json();
-
-                  if (response.ok) {
-                      alert("Registro exitoso. Redirigiendo...");
-                      window.location.href = "/dashboard";
-                  } else {
-                      errorMessage.textContent = data.message || "Error en el registro.";
-                      errorMessage.style.display = "block";
-                  }
-              } catch (error) {
-                  console.error("Error en la solicitud:", error);
-                  errorMessage.textContent = "Error en la conexión con el servidor";
-                  errorMessage.style.display = "block";
-              }
-          });
+      // Al hacer click en el input de correo se muestran los campos de contraseña y el botón de envío.
+      emailInput.addEventListener("click", function () {
+        passwordGroups.forEach(function(group) {
+          group.classList.add("show");
+        });
+        signupButtonGroup.classList.add("show");
       });
-    </script>
+
+      signupForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const email = emailInput.value.trim();
+        const usernameInput = document.querySelector("#username") as HTMLInputElement | null;
+        const passwordInput = document.querySelector("#password") as HTMLInputElement | null;
+        const confirmPasswordInput = document.querySelector("#confirmPassword") as HTMLInputElement | null;
+
+        if (!usernameInput) {
+          console.error ("El campo de username no se encontro.");
+          return;
+        }
+        if (!passwordInput || !confirmPasswordInput) {
+          console.error("❌ Los campos de contraseña no se encontraron.");
+          return;
+        }
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
+
+        console.log("📩 Enviando datos:", { email, username, password, confirmPassword });
+
+        if (!email || !username || !password || !confirmPassword) {
+          console.warn("⚠️ Campos vacíos en el formulario.");
+          errorMessage.textContent = "Por favor, complete todos los campos.";
+          errorMessage.style.display = "block";
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          console.warn("⚠️ Las contraseñas no coinciden.");
+          errorMessage.textContent = "Las contraseñas no coinciden.";
+          errorMessage.style.display = "block";
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:3000/auth/sign-up", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, username, password })
+          });
+
+          console.log("📡 Respuesta recibida:", response.status, response.statusText);
+
+          const data = await response.json();
+          console.log("📊 Datos de la API:", data);
+
+          if (response.ok) {
+            console.log("✅ Registro exitoso. Token recibido:", data.token);
+            localStorage.setItem("token", data.token);
+            window.location.href = "/login";
+          } else {
+            console.warn("⚠️ Error en el registro:", data.message);
+            errorMessage.textContent = data.message || "Error al crear la cuenta";
+            errorMessage.style.display = "block";
+          }
+        } catch (error) {
+          console.error("❌ Error en la solicitud:", error);
+          errorMessage.textContent = "Error en la conexión con el servidor";
+          errorMessage.style.display = "block";
+        }
+      });
+    });
+  </script>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="background-overlay"></div>
-    <div class="grid-container">
-        <div class="form-container">
-            <img src="../../../public/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
-            <h1 class="title">Crear Cuenta</h1>
-            <form class="form" action="/register" method="POST">
-                <div class="input-group">
-                    <label for="email">Introduzca su correo electrónico</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="input-group password-group">
-                    <label for="password">Introduzca su contraseña</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <div class="input-group confirm-group">
-                    <label for="confirm-password">Confirme su Contraseña</label>
-                    <input type="password" id="confirm-password" name="confirm-password" required>
-                </div>
-                <div class="input-group submit-group">
-                    <button type="submit" class="sign">Registrarse</button>
-                </div>
-            </form>
-            <p class="signup">¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a></p>
+  <div class="grid-container">
+    <div class="form-container">
+      <img src="../../../public/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
+      <h1 class="title">Crear Cuenta</h1>
+      <form class="form" action="/newCuenta" method="POST">
+        <div class="input-group">
+          <label for="email">Introduzca su correo electrónico</label>
+          <input type="email" id="email" name="email" required>
         </div>
+        <div class="input-group">
+          <label for="username">Nombre de usuario</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div class="input-group password-group">
+          <label for="password">Introduzca su contraseña</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <div class="input-group password-group">
+          <label for="confirmPassword">Confirme su contraseña</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        <div class="input-group submit-group">
+          <button type="submit" class="sign">Crear Cuenta</button>
+        </div>
+      </form>
+      <p class="signup">¿Ya tienes una cuenta? <a href="/login">Inicia Sesión</a></p>
     </div>
+  </div>
 </body>
 </html>
 

@@ -1,7 +1,6 @@
 ---
 import ProgressBar from "../components/ProgressBar.astro";
 
-const usuarioRegistrado = true; // Si es true, se muestra el botón; si es false, la barra de progreso
 ---
 
 <nav class="navbar">
@@ -12,15 +11,8 @@ const usuarioRegistrado = true; // Si es true, se muestra el botón; si es false
       <span class="username">Guest</span>
     </div>
 
-
-    {usuarioRegistrado ? (
-      <a href="/login" class="register-btn">
-        Registrate
-      </a>
-    ) : (
-      <ProgressBar progress={75} />
-    )}
-
+    <!-- Contenedor donde aparecerá botón o barra de progreso -->
+    <div id="usuario-contenido"></div>
 
   </div>
 
@@ -46,6 +38,34 @@ const usuarioRegistrado = true; // Si es true, se muestra el botón; si es false
   </div>
   
 </nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const contenido = document.getElementById('usuario-contenido');
+  
+    if (localStorage.getItem('accessToken') && contenido != null) {
+      contenido.innerHTML = `<div><!-- Barra de progreso --></div>`;
+    } else if (contenido != null){
+      contenido.innerHTML = `
+      <a href="/login" 
+         style="
+          background: linear-gradient(to right, #a855f7, #9333ea, #7e22ce);
+          color: white;
+          border: none;
+          padding: 8px 14px;
+          cursor: pointer;
+          border-radius: 8px;
+          font-size: 14px;
+          box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+          transition: all 0.3s ease;
+          margin-top: -10px;
+          text-decoration: none;">
+         Regístrate
+      </a>
+    `;
+  }
+  });
+</script>
 
 <style>
 /* Diseño principal de la navbar con Grid */
