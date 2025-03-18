@@ -1,0 +1,70 @@
+---
+const { tarea, progreso, meta } = Astro.props;
+
+// Convertimos a número por si vienen como strings
+const progresoNum = Number(progreso);
+const metaNum = Number(meta);
+const porcentaje = Math.min(Math.round((progresoNum / metaNum) * 100), 100);
+
+// Estado del botón
+const logroCompletado = progresoNum >= metaNum;
+---
+
+<div class="logro-item">
+  <div class="logro-info">
+    <span class="logro-tarea"><strong>{tarea}</strong></span>
+    <span class="logro-progreso">{progresoNum}/{metaNum}</span>
+  </div>
+  <div class="barra-progreso">
+    <div class="barra-progreso-llena" style={`width: ${porcentaje}%`}></div>
+  </div>
+
+  <!-- BOTÓN DE RECLAMAR -->
+  {logroCompletado && (
+    <button class="boton-reclamar"> Reclamar</button>
+  )}
+</div>
+
+<style>
+.logro-item {
+  display: flex;
+  flex-direction: column;
+  background: #39314b;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  gap: 10px;
+}
+
+.barra-progreso {
+  width: 100%;
+  background: #888;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.barra-progreso-llena {
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.4s ease;
+}
+
+/* 🔹 BOTÓN DE RECLAMAR */
+.boton-reclamar {
+  background: #ffcc00;
+  color: #282032;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.boton-reclamar:hover {
+  background: #ffdd44;
+  transform: scale(1.05);
+}
+</style>

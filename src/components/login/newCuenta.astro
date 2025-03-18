@@ -1,6 +1,3 @@
----
----
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -74,6 +71,12 @@
           errorMessage.style.display = "block";
           return;
         }
+        if (password !== confirmPassword) {
+          console.warn("⚠️ Las contraseñas no coinciden.");
+          errorMessage.textContent = "Las contraseñas no coinciden.";
+          errorMessage.style.display = "block";
+          return;
+        }
 
         try {
           const response = await fetch("http://localhost:3000/auth/sign-up", {
@@ -86,6 +89,8 @@
 
           console.log("📡 Respuesta recibida:", response.status, response.statusText);
 
+          const data = await response.json();
+          console.log("📊 Datos de la API:", data);
           const data = await response.json();
           console.log("📊 Datos de la API:", data);
 
@@ -138,6 +143,7 @@
   </div>
 </body>
 </html>
+
 
 <style>
 	/* From Uiverse.io by Yaya12085 */ 
@@ -302,14 +308,14 @@ body {
 .input-group {
     margin-top: 1rem;
 }
-.password-group, .submit-group, .forgot-group {
+.password-group, .submit-group, .confirm-group {
     opacity: 0;
     transform: translateY(-20px);
     max-height: 0;
     overflow: hidden;
     transition: opacity 0.5s ease-out, transform 0.5s ease-out, max-height 0.5s ease-out;
 }
-.password-group.show, .submit-group.show, .forgot-group.show {
+.password-group.show, .submit-group.show, .confirm-group.show {
     opacity: 1;
     transform: translateY(0);
     max-height: 100px;
