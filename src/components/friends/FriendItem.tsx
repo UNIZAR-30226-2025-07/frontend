@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import FriendItem from "./FriendsList.astro";
+import "../../styles/friendItem.css";
 
 export default function FriendsList({ userId }: { userId: string }) {
   const [friends, setFriends] = useState<{ id: string; nombre: string }[]>([]);
@@ -22,13 +23,15 @@ export default function FriendsList({ userId }: { userId: string }) {
 
   return (
     <div className="friends-list">
-      <h3>Lista de amigos</h3>
+      {friends.length > 0 && <h3>Lista de amigos</h3>}
       {friends.length > 0 ? (
         friends.map((friend) => (
           <FriendItem key={friend.id} name={friend.nombre} status="En línea" />
         ))
       ) : (
-        <p>No tienes amigos aún.</p>
+        <div className="no-friends">
+          <p>No tienes amigos aún.</p>
+        </div>
       )}
     </div>
   );
