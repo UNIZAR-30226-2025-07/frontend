@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import FriendItem from "./FriendsList.astro";
 
-export default function FriendsList() {
-  const { id } = useParams<{ id: string }>(); // 🔹 Obtenemos el ID de la URL
+export default function FriendsList({ userId }: { userId: string }) {
   const [friends, setFriends] = useState<{ id: string; nombre: string }[]>([]);
 
   useEffect(() => {
-    if (id) {
-      //fetch(`http://localhost:3000/friend/friends/${id}`, {
-        fetch(`http://localhost:3000/friend/friends/1`, {
+    if (userId) {
+      fetch(`http://localhost:3000/friend/friends/${userId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -21,7 +18,7 @@ export default function FriendsList() {
         })
         .catch((error) => console.error("Error al obtener amigos:", error));
     }
-  }, [id]);
+  }, [userId]);
 
   return (
     <div className="friends-list">
@@ -36,4 +33,3 @@ export default function FriendsList() {
     </div>
   );
 }
-
