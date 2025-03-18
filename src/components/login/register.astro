@@ -9,6 +9,14 @@
     <title>Login</title>
     <link rel="stylesheet" href="/styles.css">
     <script>
+      async function hashPassword(password: string) : Promise<string> {
+          const encoder = new TextEncoder();
+          const data = encoder.encode(password);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+          return Array.from(new Uint8Array(hashBuffer))
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join('');
+      }
       document.addEventListener("DOMContentLoaded", function () {
           const emailInput = document.querySelector("#email") as HTMLInputElement | null;
           const passwordInput = document.querySelector("#password") as HTMLInputElement | null;
@@ -51,13 +59,17 @@
                   return;
               }
 
+              // Hashear la contraseña antes de enviarla
+              const hashedPassword = await hashPassword(password);
+              console.log("🔐 Contraseña hasheada:", hashedPassword);
+
               try {
                   const response = await fetch("http://localhost:3000/auth/sign-in", {
                       method: "POST",
                       headers: {
                           "Content-Type": "application/json"
                       },
-                      body: JSON.stringify({ email, password })
+                      body: JSON.stringify({ email, password: hashedPassword })
                   });
 
                   console.log("📡 Respuesta recibida:", response.status, response.statusText);
