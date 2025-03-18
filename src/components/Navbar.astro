@@ -1,6 +1,5 @@
 ---
 import ProgressBar from "../components/ProgressBar.astro";
-
 ---
 
 <nav class="navbar">
@@ -21,39 +20,31 @@ import ProgressBar from "../components/ProgressBar.astro";
     <!-- <img src="/images/logo_galaxy.png" alt="Galaxy IO Logo" class="logo-img" /> -->
   </div>
 
-  <!-- Sección derecha: Iconos de navegación -->
-  <div class="menu">
-    <a href="/store">
-      <img src="/images/icono_carrito.png" alt="Carrito" class="menu-icon" />
-    </a>
-    <a href="/achievements">
-      <img src="/images/icono_medalla.png" alt="Medalla" class="menu-icon" />
-    </a>
-    <a href="/friends">
-      <img src="/images/icono_amigos.png" alt="Usuarios" class="menu-icon" />
-    </a>
-    <a href="/configuration">
-      <img src="/images/configuration.png" alt="Configuration" class="menu-icon" />
-    </a>
-  </div>
+ <!-- Sección derecha: Iconos de navegación -->
+ <div class="menu" id="menu-links">
+  <a id="store-link">
+    <img src="/images/icono_carrito.png" alt="Carrito" class="menu-icon" />
+  </a>
+  <a id="achievements-link">
+    <img src="/images/icono_medalla.png" alt="Medalla" class="menu-icon" />
+  </a>
+  <a id="friends-link">
+    <img src="/images/icono_amigos.png" alt="Usuarios" class="menu-icon" />
+  </a>
+  <a id="configuration-link">
+    <img src="/images/configuration.png" alt="Configuration" class="menu-icon" />
+  </a>
+</div>
   
 </nav>
 
 <script>
-  function getCookie(name: string) {
-      const cookies = document.cookie.split('; ');
-      for (let cookie of cookies) {
-          const [key, value] = cookie.split('=');
-          if (key === name) {
-              return value;
-          }
-      }
-      return null;
-  }
+  import { getCookie } from "../utils/cookies";
 
   document.addEventListener('DOMContentLoaded', () => {
     const contenido = document.getElementById('usuario-contenido');
     const accessToken = getCookie('accessToken');
+    const isAuthenticated = !!accessToken;
 
     if (accessToken && contenido != null) {
       contenido.innerHTML = `<div><!-- Barra de progreso --></div>`;
@@ -76,6 +67,17 @@ import ProgressBar from "../components/ProgressBar.astro";
       </a>
     `;
   }
+
+  // Modificar enlaces según autenticación
+  const storeLink = document.getElementById('store-link');
+  const achievementsLink = document.getElementById('achievements-link');
+  const friendsLink = document.getElementById('friends-link');
+  const configLink = document.getElementById('configuration-link');
+
+  if (storeLink instanceof HTMLAnchorElement) storeLink.href = isAuthenticated ? "/store" : "/login";
+  if (achievementsLink instanceof HTMLAnchorElement) achievementsLink.href = isAuthenticated ? "/achievements" : "/login";
+  if (friendsLink instanceof HTMLAnchorElement) friendsLink.href = isAuthenticated ? "/friends" : "/login";
+  if (configLink instanceof HTMLAnchorElement) configLink.href = isAuthenticated ? "/configuration" : "/login";
   });
 </script>
 

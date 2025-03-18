@@ -20,6 +20,7 @@
   background-color: transparent;
   border-radius: 20px;
   width: 100%;
+  color: white;
 }
 
 .inputGroup label {
@@ -30,15 +31,16 @@
   margin-left: 0.5em;
   pointer-events: none;
   transition: all 0.3s ease;
-  color: rgb(100, 100, 100);
+  color: rgb(191, 189, 189);
 }
 
 .inputGroup :is(input:focus, input:valid)~label {
   transform: translateY(-50%) scale(.9);
   margin: 0em;
-  margin-left: 1.3em;
-  padding: 0.4em;
-  background-color: #e8e8e8;
+  margin-left: 0.1em;
+  margin-top: -0.8em;
+  padding: 0.9em;
+  background-color: transparent;
 }
 
 .inputGroup :is(input:focus, input:valid) {
