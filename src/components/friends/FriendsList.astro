@@ -36,7 +36,7 @@ import Navbar from "../../components/Navbar.astro";
       <span>Solicitudes</span>
       <span class="badge">3</span>
     </button>
-    <button class="tab">
+    <button class="tab" id="add-friend-btn">
       <img src="/images/amigos/agregar_amigos.png" alt="Añadir" class="icon" />
       <span>Añadir amigos</span>
     </button>
@@ -52,28 +52,158 @@ import Navbar from "../../components/Navbar.astro";
     </div>
   </div>
 
-  <!-- Renderizamos el componente React -->
+    <!-- MODAL FORMULARIO AÑADIR AMIGOS -->
+    <div id="add-friend-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Agregar un amigo</h3>
+        <input type="text" id="friend-name" placeholder="Introduce el nombre" required />
+        <button id="send-request-btn">Enviar solicitud</button>
+      </div>
+    </div>
+
+  <!-- Componente React -->
   <FriendItem />
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const privateMatchBtn = document.getElementById("private-match-btn");
-    const dropdown = document.getElementById("dropdown-menu");
+import { validate as isUuid } from "uuid"; // Importamos funciones necesarias
 
-    if (privateMatchBtn && dropdown) {
-        privateMatchBtn.addEventListener("click", function () {
-            dropdown.classList.toggle("show");
-        });
+document.addEventListener("DOMContentLoaded", function () {
+  // Manejo del botón "Añadir amigo" y el modal
+  const addFriendBtn = document.getElementById("add-friend-btn");
+  const modal = document.getElementById("add-friend-modal");
+  const closeModal = document.querySelector(".close");
+  const sendRequestBtn = document.getElementById("send-request-btn");
 
-        document.addEventListener("click", function (event) {
-            const target = event.target as Node; // 🔹 Asegura que event.target es un Node
-            if (!privateMatchBtn.contains(target) && !dropdown.contains(target)) {
-                dropdown.classList.remove("show");
+  // Manejo del botón "Añadir amigo"
+  if (addFriendBtn && modal && closeModal && sendRequestBtn) {
+    // Mostrar modal al hacer clic en "Añadir amigos"
+    addFriendBtn.addEventListener("click", function () {
+      modal.style.display = "flex";
+    });
+
+    // Cerrar modal al hacer clic en la "X"
+    closeModal.addEventListener("click", function () {
+      modal.style.display = "none";
+    });
+
+    // Cerrar modal si se hace clic fuera del contenido
+    window.addEventListener("click", function (event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+
+    // Enviar solicitud de amistad
+    sendRequestBtn.addEventListener("click", async function () {
+      const friendNameInput = document.getElementById("friend-name") as HTMLInputElement;
+      const friendName = friendNameInput ? friendNameInput.value.trim() : "";
+
+      if (friendName) {
+        try {
+          const userId = getCookie("id");
+
+          if (userId) {
+            if (!isUuid(userId)) {
+              console.warn("El ID proporcionado no es un UUID válido. Se generará uno nuevo.");
+              return;
             }
-        });
+
+            const userData = await getUserData(userId);
+
+            // Enviar solicitud de amistad al backend
+            await sendFriendRequest(userData.username, friendName);
+
+            modal.style.display = "none"; // Cerrar modal después de enviar
+          }
+        } catch (error) {
+          console.error("❌ Error al procesar la solicitud de amistad:", error);
+        }
+      } else {
+        alert("Por favor, introduce un nombre.");
+      }
+    });
+  }
+
+  // Función para obtener el nombre del usuario mediante su ID
+  async function getUserData(userId: string) {
+    const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+    console.log(`📡 Realizando petición a: ${url}`);
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+    const data = await response.json();
+    console.log("✅ Datos obtenidos del servidor:", data.username);
+    return data;
+  }
+
+  // Función para obtener el valor de una cookie por su nombre
+  function getCookie(name: string): string | null {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [key, value] = cookie.split("=");
+      if (key === name) return value;
     }
+    return null;
+  }
+
+  // Función para enviar la solicitud de amistad
+  async function sendFriendRequest(userName: string, friendName: string) {
+    try {
+      console.log("📡 Enviando solicitud de amistad...");
+      console.log("userName:", userName);
+      console.log("friendName:", friendName);
+
+      // Hacemos la solicitud HTTP al backend usando `fetch`
+      const response = await fetch(`http://localhost:3000/friends/add_solicitud/${userName}`, {
+        method: "POST", // Usamos el método POST para enviar la solicitud
+        headers: {
+          "Content-Type": "application/json", // Indicamos que estamos enviando JSON
+        },
+        body: JSON.stringify({ id: friendName }), // Enviamos el nombre del amigo como 'id' en el cuerpo de la solicitud
+      });
+
+      console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
+
+      // Si la respuesta no es exitosa, lanzamos un error
+      if (!response.ok) {
+        const errorText = await response.text(); // Obtener el mensaje de error desde el backend
+        console.log("❌ Error en la respuesta:", errorText);
+        throw new Error("Error al enviar la solicitud");
+      }
+
+      // Si la respuesta es exitosa, intentamos obtener los datos del servidor
+      const data = await response.json();
+      console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
+
+      // Alerta al usuario indicando que la solicitud fue enviada correctamente
+      alert(`Solicitud enviada a ${friendName}`);
+    } catch (error) {
+      console.error("❌ Error al enviar la solicitud:", error); // Mostrar error detallado en la consola
+      alert("Hubo un problema al enviar la solicitud. Intenta nuevamente.");
+    }
+  }
+
+  // Manejo del botón para el match privado
+  const privateMatchBtn = document.getElementById("private-match-btn");
+  const dropdown = document.getElementById("dropdown-menu");
+
+  if (privateMatchBtn && dropdown) {
+    privateMatchBtn.addEventListener("click", function () {
+      dropdown.classList.toggle("show");
+    });
+
+    document.addEventListener("click", function (event) {
+      const target = event.target as Node;
+      if (!privateMatchBtn.contains(target) && !dropdown.contains(target)) {
+        dropdown.classList.remove("show");
+      }
+    });
+  }
 });
+
 </script>
 
 <style>
@@ -255,6 +385,64 @@ Navbar {
   text-align: left;
   width: 100%;
   max-width: 800px;
+}
+
+/* 🔹 MODAL (FORMULARIO AÑADIR AMIGOS) */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 300px;
+}
+
+.modal-content h3 {
+  margin-bottom: 10px;
+}
+
+.modal-content input {
+  padding: 8px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.modal-content button {
+  background: #57257a;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: #3e005a;
+}
+
+/* 🔹 BOTÓN DE CERRAR MODAL */
+.close {
+  color: black;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: flex-end;
 }
 
 /* 🔹 RESPONSIVE */

@@ -17,7 +17,9 @@ import Layout from "../layouts/Layout.astro";
   <div class="column center-column">
     <Logo />
     <div class="form-container">
-      <NicknameInput />
+      <div id="nickname-container" style="display: none;">
+        <NicknameInput />
+      </div>
       <PlayButton />
     </div>
   </div>
@@ -26,6 +28,24 @@ import Layout from "../layouts/Layout.astro";
     <!-- Columna vacía -->
   </div>
 </main>
+
+<script>
+  import { getCookie } from "../utils/cookies";
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const nicknameContainer = document.getElementById('nickname-container');
+    console.log("nicknameContainer encontrado:", nicknameContainer !== null); // Verifica si se encuentra el elemento
+    if (nicknameContainer) { // Verifica si el elemento no es null
+      const accessToken = getCookie('accessToken');
+      console.log("Valor de accessToken:", accessToken); // Verifica el valor de la cookie
+      const isAuthenticated = !!accessToken;
+      if (!isAuthenticated) {
+        console.log("Usuario autenticado:", isAuthenticated);
+        nicknameContainer.style.display = "block";
+      }
+  }
+  });
+</script>
 
 <style>
 /* Fondo de toda la pantalla */
