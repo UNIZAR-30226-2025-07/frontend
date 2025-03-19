@@ -67,31 +67,17 @@ import Navbar from "../../components/Navbar.astro";
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const privateMatchBtn = document.getElementById("private-match-btn");
-    const dropdown = document.getElementById("dropdown-menu");
-
-    if (privateMatchBtn && dropdown) {
-        privateMatchBtn.addEventListener("click", function () {
-            dropdown.classList.toggle("show");
-        });
-
-        document.addEventListener("click", function (event) {
-            const target = event.target as Node; // 🔹 Asegura que event.target es un Node
-            if (!privateMatchBtn.contains(target) && !dropdown.contains(target)) {
-                dropdown.classList.remove("show");
-            }
-        });
-    }
-});
+import { validate as isUuid } from "uuid"; // Importamos funciones necesarias
 
 document.addEventListener("DOMContentLoaded", function () {
-    const addFriendBtn = document.getElementById("add-friend-btn");
-    const modal = document.getElementById("add-friend-modal");
-    const closeModal = document.querySelector(".close");
-    const sendRequestBtn = document.getElementById("send-request-btn");
+  // Manejo del botón "Añadir amigo" y el modal
+  const addFriendBtn = document.getElementById("add-friend-btn");
+  const modal = document.getElementById("add-friend-modal");
+  const closeModal = document.querySelector(".close");
+  const sendRequestBtn = document.getElementById("send-request-btn");
 
-    if (addFriendBtn && modal && closeModal && sendRequestBtn) {
+  // Manejo del botón "Añadir amigo"
+  if (addFriendBtn && modal && closeModal && sendRequestBtn) {
     // Mostrar modal al hacer clic en "Añadir amigos"
     addFriendBtn.addEventListener("click", function () {
       modal.style.display = "flex";
@@ -110,30 +96,114 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Enviar solicitud de amistad
-    sendRequestBtn.addEventListener("click", function () {
+    sendRequestBtn.addEventListener("click", async function () {
       const friendNameInput = document.getElementById("friend-name") as HTMLInputElement;
       const friendName = friendNameInput ? friendNameInput.value.trim() : "";
 
       if (friendName) {
-        fetch("http://localhost:3000/api/friends", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: friendName }),
-        })
-          .then(response => response.json())
-          .then(data => {
-            alert("Solicitud enviada a " + friendName);
+        try {
+          const userId = getCookie("id");
+
+          if (userId) {
+            if (!isUuid(userId)) {
+              console.warn("El ID proporcionado no es un UUID válido. Se generará uno nuevo.");
+              return;
+            }
+
+            const userData = await getUserData(userId);
+
+            // Enviar solicitud de amistad al backend
+            await sendFriendRequest(userData.username, friendName);
+
             modal.style.display = "none"; // Cerrar modal después de enviar
-          })
-          .catch(error => console.error("Error:", error));
+          }
+        } catch (error) {
+          console.error("❌ Error al procesar la solicitud de amistad:", error);
+        }
       } else {
         alert("Por favor, introduce un nombre.");
       }
     });
   }
-  });
+
+  // Función para obtener el nombre del usuario mediante su ID
+  async function getUserData(userId: string) {
+    const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+    console.log(`📡 Realizando petición a: ${url}`);
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+    const data = await response.json();
+    console.log("✅ Datos obtenidos del servidor:", data.username);
+    return data;
+  }
+
+  // Función para obtener el valor de una cookie por su nombre
+  function getCookie(name: string): string | null {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [key, value] = cookie.split("=");
+      if (key === name) return value;
+    }
+    return null;
+  }
+
+  // Función para enviar la solicitud de amistad
+  async function sendFriendRequest(userName: string, friendName: string) {
+    try {
+      console.log("📡 Enviando solicitud de amistad...");
+      console.log("userName:", userName);
+      console.log("friendName:", friendName);
+
+      // Hacemos la solicitud HTTP al backend usando `fetch`
+      const response = await fetch(`http://localhost:3000/friends/add_solicitud/${userName}`, {
+        method: "POST", // Usamos el método POST para enviar la solicitud
+        headers: {
+          "Content-Type": "application/json", // Indicamos que estamos enviando JSON
+        },
+        body: JSON.stringify({ id: friendName }), // Enviamos el nombre del amigo como 'id' en el cuerpo de la solicitud
+      });
+
+      console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
+
+      // Si la respuesta no es exitosa, lanzamos un error
+      if (!response.ok) {
+        const errorText = await response.text(); // Obtener el mensaje de error desde el backend
+        console.log("❌ Error en la respuesta:", errorText);
+        throw new Error("Error al enviar la solicitud");
+      }
+
+      // Si la respuesta es exitosa, intentamos obtener los datos del servidor
+      const data = await response.json();
+      console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
+
+      // Alerta al usuario indicando que la solicitud fue enviada correctamente
+      alert(`Solicitud enviada a ${friendName}`);
+    } catch (error) {
+      console.error("❌ Error al enviar la solicitud:", error); // Mostrar error detallado en la consola
+      alert("Hubo un problema al enviar la solicitud. Intenta nuevamente.");
+    }
+  }
+
+  // Manejo del botón para el match privado
+  const privateMatchBtn = document.getElementById("private-match-btn");
+  const dropdown = document.getElementById("dropdown-menu");
+
+  if (privateMatchBtn && dropdown) {
+    privateMatchBtn.addEventListener("click", function () {
+      dropdown.classList.toggle("show");
+    });
+
+    document.addEventListener("click", function (event) {
+      const target = event.target as Node;
+      if (!privateMatchBtn.contains(target) && !dropdown.contains(target)) {
+        dropdown.classList.remove("show");
+      }
+    });
+  }
+});
+
 </script>
 
 <style>
