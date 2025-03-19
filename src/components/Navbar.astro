@@ -7,7 +7,7 @@ import ProgressBar from "../components/ProgressBar.astro";
   <div class="user-section">
     <div class="user-icon-container">
       <img src="/images/icono_usuario.png" alt="User Icon" class="user-icon" />
-      <span class="username">Guest</span>
+      <span id="username" class="username">Guest</span>
     </div>
 
     <!-- Contenedor donde aparecerá botón o barra de progreso -->
@@ -38,13 +38,53 @@ import ProgressBar from "../components/ProgressBar.astro";
   
 </nav>
 
-<script>
-  import { getCookie } from "../utils/cookies";
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const contenido = document.getElementById('usuario-contenido');
-    const accessToken = getCookie('accessToken');
+<script>
+  import { validate as isUuid, v4 as uuidv4 } from "uuid"; // Importamos funciones necesarias
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    function getCookie(name : string) {
+      const cookies = document.cookie.split('; ');
+      for (let cookie of cookies) {
+        const [key, value] = cookie.split('=');
+        if (key === name) {
+            return value;
+        }
+      }
+      return null;
+    }
+
+    const userId = getCookie("id");
+    const accessToken = getCookie("accessToken");
     const isAuthenticated = !!accessToken;
+    const usernameElement = document.getElementById("username");
+    const contenido = document.getElementById("usuario-contenido");
+
+    if (isAuthenticated && userId && usernameElement) {
+      if (!isUuid(userId)) {
+        console.warn("El ID proporcionado no es un UUID válido. Se generará uno nuevo.");
+        console.error("Error con el uuid");
+        return;
+      }
+
+      const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+      console.log(`📡 Realizando petición a: ${url}`);
+
+      try {
+        const response = await fetch(url);
+        console.log(`📥 Respuesta recibida. Código de estado: ${response.status}`);
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+        const data = await response.json();
+        console.log("✅ Datos obtenidos del servidor:", data.username);
+
+        usernameElement.textContent = data.username || "Guest";
+        console.log(`📝 Nombre de usuario actualizado en la interfaz: ${usernameElement.textContent}`);
+      } catch (error) {
+        console.error("❌ Error obteniendo el nombre del usuario:", error);
+      }
+    }
 
     if (accessToken && contenido != null) {
       contenido.innerHTML = `<div><!-- Barra de progreso --></div>`;
