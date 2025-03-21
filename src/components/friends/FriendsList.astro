@@ -13,6 +13,7 @@ import Navbar from "../../components/Navbar.astro";
 
 <Layout />
 
+
 <!-- NAVBAR OCUPANDO TODO EL ANCHO -->
 <div class="navbar-container">
   <Navbar />
@@ -62,12 +63,13 @@ import Navbar from "../../components/Navbar.astro";
       </div>
     </div>
 
+  <div id="notification" class="notification"></div>
   <!-- Componente React -->
   <FriendItem />
 </div>
 
 <script>
-import { validate as isUuid } from "uuid"; // Importamos funciones necesarias
+import { validate as isUuid, v4 as uuidv4 } from "uuid"; // Importamos funciones necesarias
 
 document.addEventListener("DOMContentLoaded", function () {
   // Manejo del botón "Añadir amigo" y el modal
@@ -110,10 +112,10 @@ document.addEventListener("DOMContentLoaded", function () {
               return;
             }
 
-            const userData = await getUserData(userId);
+            const userData = await getIDUser(friendName);
 
             // Enviar solicitud de amistad al backend
-            await sendFriendRequest(userData.username, friendName);
+            await sendFriendRequest(userId, userData.id);
 
             modal.style.display = "none"; // Cerrar modal después de enviar
           }
@@ -127,17 +129,42 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Función para obtener el nombre del usuario mediante su ID
-  async function getUserData(userId: string) {
-    const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+  async function getIDUser(username : string) {
+    const url = `http://localhost:3000/main-screen/get-id/${username}`;
     console.log(`📡 Realizando petición a: ${url}`);
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        const errorText = await response.text(); // Obtener el mensaje de error desde el backend
+        console.log("❌ Error en la respuesta:", errorText);
+        showNotification("No existe ningún usuario con ese username.", "error");  // Mostrar notificación de error
 
-    const data = await response.json();
-    console.log("✅ Datos obtenidos del servidor:", data.username);
-    return data;
+        // Cerrar el modal cuando ocurre un error
+        const modal = document.getElementById("add-friend-modal");
+        if (modal) {
+          modal.style.display = "none";  // Cerrar el modal
+        }
+
+        throw new Error("Error al obtener datos del usuario");
+      }
+
+      const data = await response.json();
+      console.log("✅ Datos obtenidos del servidor:", data.id);
+      return data;
+    } catch (error) {
+      console.error("❌ Error al obtener el ID de usuario:", error);
+      showNotification("Hubo un problema al obtener el usuario. Intenta nuevamente.", "error");  // Notificación de error
+
+      // Cerrar el modal cuando ocurre un error
+      const modal = document.getElementById("add-friend-modal");
+      if (modal) {
+        modal.style.display = "none";  // Cerrar el modal
+      }
+    }
   }
+
+
 
   // Función para obtener el valor de una cookie por su nombre
   function getCookie(name: string): string | null {
@@ -149,40 +176,66 @@ document.addEventListener("DOMContentLoaded", function () {
     return null;
   }
 
+// Función para mostrar notificación
+function showNotification(message : string, type : string) {
+  const notification = document.getElementById("notification");
+
+  if (notification) {
+    console.log("Se debería mostrar la notificacion");
+    notification.textContent = message;
+    notification.className = `notification ${type}`; // 'success' o 'error'
+    notification.style.display = 'block';  // Asegura que la notificación se muestra
+
+    // Después de 5 segundos, empezamos a ocultar la notificación de forma gradual
+    setTimeout(() => {
+      notification.style.opacity = "0";  // Comienza el desvanecimiento
+    }, 5000);
+
+    // Después de la animación de desvanecimiento (1 segundo), ocultamos el elemento
+    setTimeout(() => {
+      notification.style.display = 'none';
+      notification.style.opacity = "1";  // Resetear la opacidad para futuras notificaciones
+    }, 6000);  // 5 segundos de visibilidad + 1 segundo de desvanecimiento
+  }
+}
+
   // Función para enviar la solicitud de amistad
-  async function sendFriendRequest(userName: string, friendName: string) {
+  async function sendFriendRequest(userID: string, friendID: string) {
     try {
       console.log("📡 Enviando solicitud de amistad...");
-      console.log("userName:", userName);
-      console.log("friendName:", friendName);
+      console.log("userID:", userID);
+      console.log("friendID:", friendID);
 
       // Hacemos la solicitud HTTP al backend usando `fetch`
-      const response = await fetch(`http://localhost:3000/friends/add_solicitud/${userName}`, {
+      const response = await fetch(`http://localhost:3000/friends/add_solicitud/${userID}`, {
         method: "POST", // Usamos el método POST para enviar la solicitud
         headers: {
           "Content-Type": "application/json", // Indicamos que estamos enviando JSON
         },
-        body: JSON.stringify({ id: friendName }), // Enviamos el nombre del amigo como 'id' en el cuerpo de la solicitud
+        body: JSON.stringify({ id: friendID }), // Enviamos el nombre del amigo como 'id' en el cuerpo de la solicitud
       });
 
       console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
 
       // Si la respuesta no es exitosa, lanzamos un error
+      
       if (!response.ok) {
         const errorText = await response.text(); // Obtener el mensaje de error desde el backend
         console.log("❌ Error en la respuesta:", errorText);
+        showNotification("Los usuarios ya son amigos.", "error");
         throw new Error("Error al enviar la solicitud");
       }
+      
 
       // Si la respuesta es exitosa, intentamos obtener los datos del servidor
       const data = await response.json();
       console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
 
-      // Alerta al usuario indicando que la solicitud fue enviada correctamente
-      alert(`Solicitud enviada a ${friendName}`);
+      // Mostrar mensaje de éxito
+      showNotification("Solicitud enviada correctamente.", "success");
     } catch (error) {
       console.error("❌ Error al enviar la solicitud:", error); // Mostrar error detallado en la consola
-      alert("Hubo un problema al enviar la solicitud. Intenta nuevamente.");
+      //showNotification("Error al enviar la solicitud. Intenta nuevamente.", "error");
     }
   }
 
@@ -444,6 +497,33 @@ Navbar {
   cursor: pointer;
   align-self: flex-end;
 }
+
+/* 🔹 NOTIFICACIÓN */
+.notification {
+  position: fixed;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 30px;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  display: block;
+  z-index: 1000;
+  max-width: 300px;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1s ease-out; /* Añadimos la animación de desvanecimiento */
+}
+
+.notification.success {
+  background-color: green;
+}
+
+.notification.error {
+  background-color: red;
+}
+
 
 /* 🔹 RESPONSIVE */
 @media (max-width: 768px) {
