@@ -96,6 +96,43 @@ import Navbar from "../../components/Navbar.astro";
         }
       }
 
+      async function denySolicitud(userID : UUIDTypes, friendID : UUIDTypes) {
+        try {
+          console.log("📡 Rechazando solicitud de amistad...");
+          console.log("userID:", userID);
+          console.log("friendID:", friendID);
+
+          // Hacemos la solicitud HTTP al backend usando `fetch`
+          const response = await fetch(`http://localhost:3000/friends/deny_solicitud/${userID}`, {
+            method: "POST", // Usamos el método POST para enviar la solicitud
+            headers: {
+              "Content-Type": "application/json", // Indicamos que estamos enviando JSON
+            },
+            body: JSON.stringify({ id: friendID }), // Enviamos el ID del amigo
+          });
+
+          console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.log("❌ Error en la respuesta:", errorText);
+            showNotification("Ha habido un error.", "error");
+            throw new Error("Error al enviar la solicitud");
+          }
+
+          const data = await response.json();
+          console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
+          await getSolicitudes();
+
+          // Mostrar mensaje de éxito
+          showNotification("Solicitud rechazada correctamente.", "success");
+        } catch (error) {
+          console.error("❌ Error al rechazar la solicitud:", error);
+          // Opcionalmente, mostrar mensaje de error al usuario
+          // showNotification("Error al enviar la solicitud. Intenta nuevamente.", "error");
+        }
+      }
+
       async function acceptFriends(userID : UUIDTypes, friendID : UUIDTypes) {
         try {
           console.log("📡 Enviando solicitud de amistad...");
@@ -174,7 +211,7 @@ import Navbar from "../../components/Navbar.astro";
                         <button class="add-btn" data-friend-id="${solicitud.User1.id}">
                           <img src="/images/amigos/aceptar_amigos.png" alt="Aceptar" />
                         </button>
-                        <button class="remove-btn">
+                        <button class="remove-btn" data-friend-id-deny="${solicitud.User1.id}">
                           <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
                         </button>
                       </div>
@@ -190,6 +227,18 @@ import Navbar from "../../components/Navbar.astro";
                     const friendID = button.getAttribute('data-friend-id');
                     if (friendID && userId) {
                       await acceptFriends(userId, friendID);
+                    }
+                  });
+                });
+
+                // Rechazar las solicitudes de amistad
+                const denySolicitudButtons = document.querySelectorAll('.remove-btn');
+                denySolicitudButtons.forEach(button => {
+                  button.addEventListener('click', async () => {
+                    console.log("🟢 Click detectado en botón de aceptar");
+                    const friendID = button.getAttribute('data-friend-id-deny');
+                    if (friendID && userId) {
+                      await denySolicitud(userId, friendID);
                     }
                   });
                 });
