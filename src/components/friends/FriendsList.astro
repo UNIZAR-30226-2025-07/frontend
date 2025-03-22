@@ -1,14 +1,12 @@
 ---
-
-import FriendItem from "./FriendItem.tsx";
 import Logo from "../../components/Logo.astro";
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
-
 ---
 
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap">
 </head>
 
 <Layout />
@@ -65,7 +63,236 @@ import Navbar from "../../components/Navbar.astro";
 
   <div id="notification" class="notification"></div>
   <!-- Componente React -->
-  <FriendItem />
+  <client:only>
+    <script>
+      import type { UUIDTypes } from "uuid";
+
+      interface Friend {
+        User1: {
+          username: string;
+          id: UUIDTypes;
+          lastConnection: string;
+        };
+        User2: {
+          username: string;
+          id: UUIDTypes;
+          lastConnection: string;
+        };
+      }
+  
+      let friendsData: Friend[] = [];
+      let currentUsername: string = ''; 
+
+      // Función para obtener el nombre de usuario
+      const getUserData = async (userId: string) => {
+        const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+        console.log(`📡 Realizando petición a: ${url}`);
+
+        try {
+          const response = await fetch(url);
+          console.log(`📥 Respuesta recibida. Código de estado: ${response.status}`);
+
+          if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+          const data = await response.json();
+          console.log("✅ Datos obtenidos del servidor:", data.username);
+
+          currentUsername = data.username || "Guest"; // Guardamos el username
+          console.log(`📝 Nombre de usuario actualizado en la interfaz: ${currentUsername}`);
+          //getSolicitudes(); // Llamamos a la función para obtener solicitudes después de obtener el username
+        } catch (error) {
+          console.error("❌ Error obteniendo el nombre del usuario:", error);
+        }
+      };
+ 
+      const getFriends = async () => {
+        try {
+          const cookies = document.cookie || '';
+          console.log("Cookies disponibles:", cookies);
+  
+          const userId = cookies
+            .split('; ')
+            .find(row => row && row.startsWith('id='))?.split('=')[1] || null;
+  
+          if (!userId) {
+            console.log("Id no encontrado");
+          } else {
+            console.log("Id encontrado", userId);
+            //Encontrar el username del usuario:
+            await getUserData(userId);
+
+
+            const response = await fetch(`http://localhost:3000/friends/get_friends/${userId}`);
+            const data = await response.json();
+            friendsData = data;
+            console.log("Amigos:", friendsData);
+
+            const friendsList = document.getElementById("friends-list");
+            if (friendsList) {
+              friendsList.innerHTML = friendsData.length > 0
+                ? friendsData.map((friend) => {
+                  const friendData = (friend.User1.id !== userId) ? friend.User1 : friend.User2;
+                  const lastConnectionDate = new Date(friendData.lastConnection);
+                  const hoursAgo = Math.floor((new Date().getTime() - lastConnectionDate.getTime()) / (1000 * 60 * 60)); // Horas desde la última conexión
+                  return `
+                    <div class="friend-item">
+                      <div class="friend-info">
+                        <span class="friend-name"><strong>${friendData.username}</strong></span>
+                        <span class="friend-status">En línea hace ${hoursAgo} horas</span>
+                      </div>
+                      <div class="friend-actions">
+                        <button class="remove-btn">
+                          <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
+                        </button>
+                      </div>
+                    </div>
+                  `;}).join('')
+                : '<div class="no-solicitudes"><p>No tienes amigos todavía.</p></div>';
+
+
+                const noFriends = friendsList.querySelector('.no-solicitudes') as HTMLElement;
+                if (noFriends) {
+                  noFriends.style.textAlign = 'center';
+                  noFriends.style.fontSize = '18px';
+                  noFriends.style.color = '#ccc';
+                  noFriends.style.fontWeight = 'bold';
+                  noFriends.style.padding = '20px';
+                  noFriends.style.border = '2px dashed #774a9b';
+                  noFriends.style.borderRadius = '10px';
+                  noFriends.style.background = 'rgba(255, 255, 255, 0.05)';
+                  noFriends.style.display = 'flex';
+                  noFriends.style.flexDirection = 'column';
+                  noFriends.style.alignItems = 'center';
+                  noFriends.style.justifyContent = 'center';
+                  noFriends.style.gap = '10px';
+                  noFriends.style.maxWidth = '400px';
+                  noFriends.style.margin = '20px auto';
+                }
+
+                if (friendsData.length > 0) {
+                  const friendItems = friendsList.querySelectorAll('.friend-item');
+                  /* Estilos para las solicitudes */
+    
+                  friendItems.forEach(item => {
+                    const friendItem = item as HTMLElement;
+  
+                    friendItem.style.display = 'flex';
+                    friendItem.style.justifyContent = 'space-between';
+                    friendItem.style.alignItems = 'center';
+                    friendItem.style.background = '#888';
+                    friendItem.style.padding = '12px';
+                    friendItem.style.borderRadius = '5px';
+                    friendItem.style.marginBottom = '8px';
+                    friendItem.style.width = "600px";
+
+                    const friendInfo = item.querySelector('.friend-info') as HTMLElement;
+                    const friendName = item.querySelector('.friend-name') as HTMLElement;
+                    const friendStatus = item.querySelector('.friend-status') as HTMLElement;
+                    const addBtn = item.querySelector('.add-btn') as HTMLElement;
+                    const removeBtn = item.querySelector('.remove-btn') as HTMLElement;
+      
+                    // Estilos para la información del amigo
+                    if (friendInfo) {
+                      friendInfo.style.display = 'flex';
+                      friendInfo.style.flexDirection = 'row';
+                      friendInfo.style.alignItems = 'center';
+                      friendInfo.style.gap = '15px';
+                    }
+                    
+                    if (friendName) {
+                      friendName.style.fontFamily = "'Luckiest Guy', cursive";
+                      friendName.style.fontSize = '28px';
+                      friendName.style.letterSpacing = '1px';
+                    }
+                    
+                    if (friendStatus) {
+                      friendStatus.style.color = '#ddd';
+                      friendStatus.style.fontSize = '14px';
+                      friendStatus.style.whiteSpace = 'nowrap';
+                    }
+
+                    if (addBtn) {
+                      addBtn.style.backgroundColor = 'none';
+                      addBtn.style.border = '2px solid green';
+                      addBtn.style.borderRadius = '50%';
+                      addBtn.style.padding = '8px';
+                      addBtn.style.display = 'flex';
+                      addBtn.style.justifyContent = 'center';
+                      addBtn.style.alignItems = 'center';
+                      addBtn.style.cursor = 'pointer';
+                      addBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
+                    }
+
+                    if (addBtn?.querySelector('img')) {
+                      const addImg = addBtn.querySelector('img');
+                      if (addImg) {
+                        addImg.style.width = '20px';
+                      }
+                    }
+
+                    if (removeBtn) {
+                      removeBtn.style.backgroundColor = 'none';
+                      removeBtn.style.border = '2px solid red';
+                      removeBtn.style.borderRadius = '50%';
+                      removeBtn.style.padding = '8px';
+                      removeBtn.style.display = 'flex';
+                      removeBtn.style.justifyContent = 'center';
+                      removeBtn.style.alignItems = 'center';
+                      removeBtn.style.cursor = 'pointer';
+                      removeBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
+                    }
+
+                    if (removeBtn?.querySelector('img')) {
+                      const removeImg = removeBtn.querySelector('img');
+                      if (removeImg) {
+                        removeImg.style.width = '20px';
+                      }
+                    }
+
+                    // Efecto hover para el botón de aceptar
+                    if (addBtn) {
+                      addBtn.addEventListener('mouseover', () => {
+                        addBtn.style.backgroundColor = 'rgba(55, 191, 27, 0.2)';  // Fondo verde suave
+                        addBtn.style.transform = 'scale(1.1)';
+                      });
+                      addBtn.addEventListener('mouseout', () => {
+                        addBtn.style.backgroundColor = '';  // Vuelve al fondo original
+                        addBtn.style.transform = '';
+                      });
+                    }
+
+                    // Efecto hover para el botón de eliminar
+                    if (removeBtn) {
+                      removeBtn.addEventListener('mouseover', () => {
+                        removeBtn.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';  // Fondo rojo suave
+                        removeBtn.style.transform = 'scale(1.1)';
+                      });
+                      removeBtn.addEventListener('mouseout', () => {
+                        removeBtn.style.backgroundColor = '';  // Vuelve al fondo original
+                        removeBtn.style.transform = '';
+                      });
+                    }
+
+                    // Estilo para el contenedor de botones
+                    const friendActions = item.querySelector('.friend-actions') as HTMLElement;
+                    if (friendActions) {
+                      friendActions.style.display = 'flex';
+                      friendActions.style.gap = '10px';
+                    }
+                  });
+                }
+            }
+          }
+        } catch (error) {
+          console.error("Error al obtener las amistades:", error);
+        }
+      };
+  
+      getFriends();
+    </script>
+  
+    <div id="friends-list"></div>
+  </client:only>
 </div>
 
 <script>
@@ -176,28 +403,28 @@ document.addEventListener("DOMContentLoaded", function () {
     return null;
   }
 
-// Función para mostrar notificación
-function showNotification(message : string, type : string) {
-  const notification = document.getElementById("notification");
+  // Función para mostrar notificación
+  function showNotification(message : string, type : string) {
+    const notification = document.getElementById("notification");
 
-  if (notification) {
-    console.log("Se debería mostrar la notificacion");
-    notification.textContent = message;
-    notification.className = `notification ${type}`; // 'success' o 'error'
-    notification.style.display = 'block';  // Asegura que la notificación se muestra
+    if (notification) {
+      console.log("Se debería mostrar la notificacion");
+      notification.textContent = message;
+      notification.className = `notification ${type}`; // 'success' o 'error'
+      notification.style.display = 'block';  // Asegura que la notificación se muestra
 
-    // Después de 5 segundos, empezamos a ocultar la notificación de forma gradual
-    setTimeout(() => {
-      notification.style.opacity = "0";  // Comienza el desvanecimiento
-    }, 5000);
+      // Después de 5 segundos, empezamos a ocultar la notificación de forma gradual
+      setTimeout(() => {
+        notification.style.opacity = "0";  // Comienza el desvanecimiento
+      }, 5000);
 
-    // Después de la animación de desvanecimiento (1 segundo), ocultamos el elemento
-    setTimeout(() => {
-      notification.style.display = 'none';
-      notification.style.opacity = "1";  // Resetear la opacidad para futuras notificaciones
-    }, 6000);  // 5 segundos de visibilidad + 1 segundo de desvanecimiento
+      // Después de la animación de desvanecimiento (1 segundo), ocultamos el elemento
+      setTimeout(() => {
+        notification.style.display = 'none';
+        notification.style.opacity = "1";  // Resetear la opacidad para futuras notificaciones
+      }, 6000);  // 5 segundos de visibilidad + 1 segundo de desvanecimiento
+    }
   }
-}
 
   // Función para enviar la solicitud de amistad
   async function sendFriendRequest(userID: string, friendID: string) {
@@ -343,6 +570,8 @@ Navbar {
   font-size: 32px;
   font-weight: bold;
   text-align: center;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 1px; /* Opcional: mejora la legibilidad */
 }
 
 /* 🔹 TABS OCUPANDO TODO EL ANCHO */

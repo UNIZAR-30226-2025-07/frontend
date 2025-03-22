@@ -28,7 +28,9 @@ import Navbar from "../../components/Navbar.astro";
     <h2 class="title">SOLICITUDES DE AMISTAD</h2>
   </header>
 
-  <!-- LISTA DE AMIGOS -->
+  <div id="notification" class="notification"></div>
+
+  <!-- LISTA DE SOLICITUDES -->
   <client:only>
     <script>
       import type { UUIDTypes } from "uuid";
