@@ -236,6 +236,9 @@ import Navbar from "../../components/Navbar.astro";
                         <span class="friend-status">En línea hace ${hoursAgo} horas</span>
                       </div>
                       <div class="friend-actions">
+                        <button class="chat-btn" data-friend-id="${friendData.id}"">
+                          <img src="/images/amigos/chat.png" alt="Chat" />
+                        </button>
                         <button class="remove-btn" data-friend-id="${friendData.id}"">
                           <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
                         </button>
@@ -245,18 +248,18 @@ import Navbar from "../../components/Navbar.astro";
                 : '<div class="no-solicitudes"><p>No tienes amigos todavía.</p></div>';
 
                 // Eliminar las solicitudes de amistad
-                /*
-                const denySolicitudButtons = document.querySelectorAll('.remove-btn');
-                denySolicitudButtons.forEach(button => {
+                
+                const chatButtons = document.querySelectorAll('.chat-btn');
+                chatButtons.forEach(button => {
                   button.addEventListener('click', async () => {
-                    console.log("Click detectado en botón de eliminar");
+                    console.log("Click detectado chat");
                     const friendID = button.getAttribute('data-friend-id');
                     if (friendID && userId) {
-                      await removeFriend(userId, friendID);
+                      window.location.href = `/chat`;
                     }
                   });
                 });
-                */
+                
                 // Mostrar el confirm de rechazo de solicitud
                 const removeFriendButtons = document.querySelectorAll('.remove-btn');
                 let currentFriendID: string | null = null;
@@ -341,7 +344,7 @@ import Navbar from "../../components/Navbar.astro";
                     const friendInfo = item.querySelector('.friend-info') as HTMLElement;
                     const friendName = item.querySelector('.friend-name') as HTMLElement;
                     const friendStatus = item.querySelector('.friend-status') as HTMLElement;
-                    const addBtn = item.querySelector('.add-btn') as HTMLElement;
+                    const chatBtn = item.querySelector('.chat-btn') as HTMLElement;
                     const removeBtn = item.querySelector('.remove-btn') as HTMLElement;
       
                     // Estilos para la información del amigo
@@ -365,20 +368,20 @@ import Navbar from "../../components/Navbar.astro";
                       friendStatus.style.whiteSpace = 'nowrap';
                     }
 
-                    if (addBtn) {
-                      addBtn.style.backgroundColor = 'none';
-                      addBtn.style.border = '2px solid green';
-                      addBtn.style.borderRadius = '50%';
-                      addBtn.style.padding = '8px';
-                      addBtn.style.display = 'flex';
-                      addBtn.style.justifyContent = 'center';
-                      addBtn.style.alignItems = 'center';
-                      addBtn.style.cursor = 'pointer';
-                      addBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
+                    if (chatBtn) {
+                      chatBtn.style.backgroundColor = 'none';
+                      chatBtn.style.border = '2px solid blue';
+                      chatBtn.style.borderRadius = '50%';
+                      chatBtn.style.padding = '8px';
+                      chatBtn.style.display = 'flex';
+                      chatBtn.style.justifyContent = 'center';
+                      chatBtn.style.alignItems = 'center';
+                      chatBtn.style.cursor = 'pointer';
+                      chatBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
                     }
 
-                    if (addBtn?.querySelector('img')) {
-                      const addImg = addBtn.querySelector('img');
+                    if (chatBtn?.querySelector('img')) {
+                      const addImg = chatBtn.querySelector('img');
                       if (addImg) {
                         addImg.style.width = '20px';
                       }
@@ -404,14 +407,14 @@ import Navbar from "../../components/Navbar.astro";
                     }
 
                     // Efecto hover para el botón de aceptar
-                    if (addBtn) {
-                      addBtn.addEventListener('mouseover', () => {
-                        addBtn.style.backgroundColor = 'rgba(55, 191, 27, 0.2)';  // Fondo verde suave
-                        addBtn.style.transform = 'scale(1.1)';
+                    if (chatBtn) {
+                      chatBtn.addEventListener('mouseover', () => {
+                        chatBtn.style.backgroundColor = 'rgba(57, 126, 204, 0.2)';  // Fondo verde suave
+                        chatBtn.style.transform = 'scale(1.1)';
                       });
-                      addBtn.addEventListener('mouseout', () => {
-                        addBtn.style.backgroundColor = '';  // Vuelve al fondo original
-                        addBtn.style.transform = '';
+                      chatBtn.addEventListener('mouseout', () => {
+                        chatBtn.style.backgroundColor = '';  // Vuelve al fondo original
+                        chatBtn.style.transform = '';
                       });
                     }
 
@@ -750,7 +753,7 @@ Navbar {
   justify-content: center;
   gap: 15px;
   width: 100%;
-  max-width: 600px;
+  max-width: 620px;
   background: #3e005a;
   border-radius: 10px;
   padding: 10px;
