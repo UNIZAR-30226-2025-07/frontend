@@ -22,6 +22,17 @@ import Navbar from "../../components/Navbar.astro";
   <Logo />
 </div>
 
+<!-- CONFIRMACION PARA RECHAZAR SOLICITUD -->
+<div id="remove-friend-confirm" class="confirm">
+  <div class="confirm-content">
+    <p>¿Estás seguro de que quieres eliminar este amigo?</p>
+    <div class="confirm-actions">
+      <button id="confirm-remove-btn" class="confirm-btn">Aceptar</button>
+      <button id="cancel-remove-btn" class="cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONTENEDOR PRINCIPAL -->
 <div class="container">
   <header class="header">
@@ -54,8 +65,10 @@ import Navbar from "../../components/Navbar.astro";
     <!-- MODAL FORMULARIO AÑADIR AMIGOS -->
     <div id="add-friend-modal" class="modal">
       <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>Agregar un amigo</h3>
+        <div class="modal-header"> <!-- Nuevo contenedor flex -->
+          <h3>Agregar un amigo</h3>
+          <span class="close">&times;</span>
+        </div>
         <input type="text" id="friend-name" placeholder="Introduce el nombre" required />
         <button id="send-request-btn">Enviar solicitud</button>
       </div>
@@ -232,6 +245,7 @@ import Navbar from "../../components/Navbar.astro";
                 : '<div class="no-solicitudes"><p>No tienes amigos todavía.</p></div>';
 
                 // Eliminar las solicitudes de amistad
+                /*
                 const denySolicitudButtons = document.querySelectorAll('.remove-btn');
                 denySolicitudButtons.forEach(button => {
                   button.addEventListener('click', async () => {
@@ -242,6 +256,51 @@ import Navbar from "../../components/Navbar.astro";
                     }
                   });
                 });
+                */
+                // Mostrar el confirm de rechazo de solicitud
+                const removeFriendButtons = document.querySelectorAll('.remove-btn');
+                let currentFriendID: string | null = null;
+
+                removeFriendButtons.forEach(button => {
+                  button.addEventListener('click', (e) => {
+                    // Obtener el ID del amigo de la solicitud
+                    currentFriendID = button.getAttribute('data-friend-id');
+                    // Mostrar el confirm de confirmación
+                    const confirm = document.getElementById('remove-friend-confirm');
+                    if (confirm) confirm.style.display = 'flex';
+                  });
+                });
+
+                // Cancelar la acción de rechazo
+                const cancelRemoveBtn = document.getElementById('cancel-remove-btn');
+                if (cancelRemoveBtn) {
+                  cancelRemoveBtn.addEventListener('click', () => {
+                    const confirm = document.getElementById('remove-friend-confirm');
+                    if (confirm) confirm.style.display = 'none'; // Cerrar confirm
+                  });
+                }
+
+                // Confirmar el rechazo de la solicitud
+                const confirmRemoveBtn = document.getElementById('confirm-remove-btn');
+                if (confirmRemoveBtn) {
+                  confirmRemoveBtn.addEventListener('click', async () => {
+                    const userId = getUserIdFromAccessToken();
+                    if (userId && currentFriendID) {
+                      await removeFriend(userId, currentFriendID); // Llamamos a la función para rechazar la solicitud
+                      const confirm = document.getElementById('remove-friend-confirm');
+                      if (confirm) confirm.style.display = 'none'; // Cerrar confirm
+                    }
+                  });
+                }
+
+                // Cerrar el confirm al hacer clic en la "X"
+                const closeConfirm = document.querySelector(".close");
+                if (closeConfirm) {
+                  closeConfirm.addEventListener('click', () => {
+                    const confirm = document.getElementById('remove-friend-confirm');
+                    if (confirm) confirm.style.display = 'none'; // Cerrar confirm
+                  });
+                }
 
 
                 const noFriends = friendsList.querySelector('.no-solicitudes') as HTMLElement;
@@ -273,7 +332,7 @@ import Navbar from "../../components/Navbar.astro";
                     friendItem.style.display = 'flex';
                     friendItem.style.justifyContent = 'space-between';
                     friendItem.style.alignItems = 'center';
-                    friendItem.style.background = '#888';
+                    friendItem.style.background = '#383848';
                     friendItem.style.padding = '12px';
                     friendItem.style.borderRadius = '5px';
                     friendItem.style.marginBottom = '8px';
@@ -296,6 +355,7 @@ import Navbar from "../../components/Navbar.astro";
                     if (friendName) {
                       friendName.style.fontFamily = "'Luckiest Guy', cursive";
                       friendName.style.fontSize = '28px';
+                      friendName.style.color = '#53E3E6';
                       friendName.style.letterSpacing = '1px';
                     }
                     
@@ -385,7 +445,7 @@ import Navbar from "../../components/Navbar.astro";
       getFriends();
     </script>
   
-    <div id="friends-list"></div>
+    <div id="friends-list" class="friends-scroll"></div>
   </client:only>
 </div>
 
@@ -612,6 +672,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: hidden;
 }
 
 /* 🔹 NAVBAR OCUPANDO TODO EL ANCHO */
@@ -778,6 +839,30 @@ Navbar {
   max-width: 800px;
 }
 
+.friends-scroll {
+  max-height: 400px; /* Ajusta según lo que necesites */
+  overflow-y: auto;
+  padding-right: 10px; /* para evitar que el scroll tape contenido */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.friends-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.friends-scroll::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+.friends-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* 🔹 MODAL (FORMULARIO AÑADIR AMIGOS) */
 .modal {
   display: none;
@@ -792,7 +877,7 @@ Navbar {
 }
 
 .modal-content {
-  background: white;
+  background: #3e005a;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -802,9 +887,25 @@ Navbar {
   width: 300px;
 }
 
-.modal-content h3 {
-  margin-bottom: 10px;
+.modal-header {
+    display: flex;
+    justify-content: space-between; /* Separa título y X */
+    align-items: center; /* Centra verticalmente */
+    width: 100%;
+    margin-bottom: 15px; /* Espacio debajo del header */
 }
+
+.modal-content h3 {
+  margin: 0;
+  color: #ccc;
+}
+
+.close {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+    /* Posición relativa (ya no absolute) */
+  }
 
 .modal-content input {
   padding: 8px;
@@ -829,7 +930,7 @@ Navbar {
 
 /* 🔹 BOTÓN DE CERRAR MODAL */
 .close {
-  color: black;
+  color: white;
   font-size: 24px;
   font-weight: bold;
   cursor: pointer;
@@ -839,7 +940,7 @@ Navbar {
 /* 🔹 NOTIFICACIÓN */
 .notification {
   position: fixed;
-  top: 150px;
+  top: 215px;
   left: 50%;
   transform: translateX(-50%);
   padding: 15px 30px;
@@ -861,6 +962,98 @@ Navbar {
 .notification.error {
   background-color: red;
 }
+
+/* 🔹 CONFIRMACION PARA ELIMINAR AMIGOS */
+.confirm {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-content {
+    background: #4f2b5e;  /* Color de fondo */
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 350px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin: 0 10px;
+}
+
+.confirm-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.confirm-content h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.close {
+    font-size: 30px;
+    cursor: pointer;
+    color: #fff;
+    margin-left: 10px;
+}
+
+.confirm-content p {
+    color: #ccc;
+    font-size: 16px;
+    margin: 0;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.confirm-btn, .cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn {
+    background-color: #6ab04c; /* Verde suave */
+    color: white;
+}
+
+.confirm-btn:hover {
+    background-color: #5aa044;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background-color: #e74c3c; /* Rojo suave */
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+  
 
 
 /* 🔹 RESPONSIVE */

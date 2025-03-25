@@ -22,6 +22,17 @@ import Navbar from "../components/Navbar.astro";
   <Logo />
 </div>
 
+<!-- CONFIRMACION PARA RECHAZAR SOLICITUD -->
+<div id="update-confirm" class="confirm">
+  <div class="confirm-content">
+    <p>¿Estás seguro de que quieres actualizar tus datos?</p>
+    <div class="confirm-actions">
+      <button id="confirm-update-btn" class="confirm-btn">Aceptar</button>
+      <button id="cancel-update-btn" class="cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONTENEDOR PRINCIPAL -->
 <div class="container">
   <header class="header">
@@ -233,6 +244,52 @@ import Navbar from "../components/Navbar.astro";
       getUserData(userId);
     }
   });
+
+  // Función para mostrar la ventana de confirmación de actualización
+  const showUpdateConfirm = () => {
+    const confirm = document.getElementById('update-confirm');
+    if (confirm) confirm.style.display = 'flex';  // Muestra el modal
+  };
+
+  // Función para cerrar la ventana de confirmación
+  const closeUpdateConfirm = () => {
+    const confirm = document.getElementById('update-confirm');
+    if (confirm) confirm.style.display = 'none';  // Cierra el modal
+  };
+
+  // Mostrar la ventana de confirmación cuando el usuario haga clic en "Guardar Cambios"
+  const saveButton = document.querySelector('.save-button');
+  if (saveButton) {
+    saveButton.addEventListener('click', (event) => {
+      event.preventDefault(); // Evita que el formulario se envíe antes de la confirmación
+      showUpdateConfirm();  // Muestra la ventana de confirmación
+    });
+  }
+
+  // Confirmar la actualización al hacer clic en "Aceptar" en la ventana de confirmación
+  const confirmUpdateButton = document.getElementById('confirm-update-btn');
+  if (confirmUpdateButton) {
+    confirmUpdateButton.addEventListener('click', async () => {
+      const userId = getUserIdFromAccessToken();
+      const username = document.getElementById('profile-username').value;
+      const password = document.getElementById('password').value;
+
+      if (userId) {
+        await updateUser(userId, username, password);  // Actualiza los datos del usuario
+        closeUpdateConfirm();  // Cierra la ventana de confirmación
+      } else {
+        showNotification('Usuario no encontrado', 'error');
+      }
+    });
+  }
+
+  // Cancelar la actualización al hacer clic en "Cancelar" en la ventana de confirmación
+  const cancelUpdateButton = document.getElementById('cancel-update-btn');
+  if (cancelUpdateButton) {
+    cancelUpdateButton.addEventListener('click', () => {
+      closeUpdateConfirm();  // Cierra la ventana de confirmación
+    });
+  }
 </script>
 
 
@@ -253,6 +310,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: hidden;
 }
 
 /* 🔹 NAVBAR OCUPANDO TODO EL ANCHO */
@@ -392,6 +450,7 @@ input:focus {
   font-size: 16px;
   cursor: pointer;
   margin-top: 20px;
+  width: 460px;
 }
 
 .logout-button:hover {
@@ -401,7 +460,7 @@ input:focus {
 /* 🔹 NOTIFICACIÓN */
 .notification {
   position: fixed;
-  top: 150px;
+  top: 215px;
   left: 50%;
   transform: translateX(-50%);
   padding: 15px 30px;
@@ -423,6 +482,98 @@ input:focus {
 .notification.error {
   background-color: red;
 }
+
+/* 🔹 CONFIRMACION PARA ELIMINAR AMIGOS */
+.confirm {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-content {
+    background: #4f2b5e;  /* Color de fondo */
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 350px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin: 0 10px;
+}
+
+.confirm-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.confirm-content h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.close {
+    font-size: 30px;
+    cursor: pointer;
+    color: #fff;
+    margin-left: 10px;
+}
+
+.confirm-content p {
+    color: #ccc;
+    font-size: 16px;
+    margin: 0;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.confirm-btn, .cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn {
+    background-color: #6ab04c; /* Verde suave */
+    color: white;
+}
+
+.confirm-btn:hover {
+    background-color: #5aa044;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background-color: #e74c3c; /* Rojo suave */
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+  
 
 /* 🔹 RESPONSIVE */
 @media (max-width: 768px) {

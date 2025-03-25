@@ -8,14 +8,18 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout />
-<Navbar />
+<div class="navbar-container">
+  <Navbar />
+</div>
 <main class="main-container">
   <div class="column left-column">
     <AspectSelector client:load />
   </div>
   
   <div class="column center-column">
-    <Logo />
+    <div class="logo-container">
+      <Logo />
+    </div>
     <div class="form-container">
       <div id="nickname-container" style="display: none;">
         <NicknameInput />
@@ -55,6 +59,42 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
+  overflow-y: hidden;
+}
+
+.navbar-container {
+  width: 100%;
+  position: sticky; /* 🔹 AHORA SE MUEVE CON EL SCROLL */
+  top: 0;
+  left: 0;
+  background: #282032;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+Navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.logo-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  z-index: 1001; /* Más alto que la NavBar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 20px; /* Espacio entre elementos */
+}
+
+.logo-container img {
+  width: 120px; /* Ajustar tamaño si es necesario */
+  height: auto;
 }
 
 /* Contenedor principal */
