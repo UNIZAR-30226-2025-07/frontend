@@ -157,7 +157,7 @@ import Navbar from "../../components/Navbar.astro";
           await getFriends();
 
           // Mostrar mensaje de éxito
-          showNotification("Solicitud rechazada correctamente.", "success");
+          showNotification("Amigo eliminado correctamente.", "success");
         } catch (error) {
           console.error("❌ Error al rechazar la solicitud:", error);
           // Opcionalmente, mostrar mensaje de error al usuario
@@ -652,7 +652,7 @@ Navbar {
   justify-content: center;
   gap: 15px;
   width: 100%;
-  max-width: 800px;
+  max-width: 600px;
   background: #3e005a;
   border-radius: 10px;
   padding: 10px;

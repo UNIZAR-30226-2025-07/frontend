@@ -6,7 +6,9 @@ import ProgressBar from "../components/ProgressBar.astro";
   <!-- Sección izquierda: Usuario -->
   <div class="user-section">
     <div class="user-icon-container">
-      <img src="/images/icono_usuario.png" alt="User Icon" class="user-icon" />
+      <a id="profile-link">
+        <img src="/images/icono_usuario.png" alt="User Icon" class="user-icon" />
+      </a>
       <span id="username" class="username">Guest</span>
     </div>
 
@@ -109,11 +111,13 @@ import ProgressBar from "../components/ProgressBar.astro";
   }
 
   // Modificar enlaces según autenticación
+  const profileLink = document.getElementById('profile-link');
   const storeLink = document.getElementById('store-link');
   const achievementsLink = document.getElementById('achievements-link');
   const friendsLink = document.getElementById('friends-link');
   const configLink = document.getElementById('configuration-link');
 
+  if (profileLink instanceof HTMLAnchorElement) profileLink.href = isAuthenticated ? "/profile" : "/login";
   if (storeLink instanceof HTMLAnchorElement) storeLink.href = isAuthenticated ? "/store" : "/login";
   if (achievementsLink instanceof HTMLAnchorElement) achievementsLink.href = isAuthenticated ? "/achievements" : "/login";
   if (friendsLink instanceof HTMLAnchorElement) friendsLink.href = isAuthenticated ? "/friends" : "/login";
