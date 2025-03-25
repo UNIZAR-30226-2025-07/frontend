@@ -81,7 +81,6 @@
                       console.log("✅ Autenticación exitosa. Token  e id recibidos:", data.accesstoken);
                       document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax;`;
                       document.cookie = `refreshToken=${data.refreshToken}; path=/; SameSite=Lax;`
-                      document.cookie = `id=${data.id}; path=/; SameSite=Lax;`
                       window.location.href = "/";
                   } else {
                       console.warn("⚠️ Error en la autenticación:", data.message);
