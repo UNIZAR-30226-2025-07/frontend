@@ -1,5 +1,1082 @@
 ---
-import FriendsList from "../components/friends/FriendsList.astro";
+import Logo from "../components/Logo.astro";
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
 ---
 
-<FriendsList />
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap">
+</head>
+
+<Layout />
+
+
+<!-- NAVBAR OCUPANDO TODO EL ANCHO -->
+<div class="navbar-container">
+  <Navbar />
+</div>
+
+<!-- LOGO SUPERPUESTO AL NAVBAR -->
+<div class="logo-container">
+  <Logo />
+</div>
+
+<!-- CONFIRMACION PARA RECHAZAR SOLICITUD -->
+<div id="remove-friend-confirm" class="confirm">
+  <div class="confirm-content">
+    <p>¿Estás seguro de que quieres eliminar este amigo?</p>
+    <div class="confirm-actions">
+      <button id="confirm-remove-btn" class="confirm-btn">Aceptar</button>
+      <button id="cancel-remove-btn" class="cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="container">
+  <header class="header">
+    <h2 class="title">AMIGOS</h2>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="window.location.href='http://localhost:4321/requests'">
+      <img src="/images/amigos/aceptar_amigos.png" alt="Solicitudes" class="icon" />
+      <span>Solicitudes</span>
+      <span class="badge">3</span>
+    </button>
+    <button class="tab" id="add-friend-btn">
+      <img src="/images/amigos/agregar_amigos.png" alt="Añadir" class="icon" />
+      <span>Añadir amigos</span>
+    </button>
+    <div class="tab-dropdown">
+      <button class="tab" id="private-match-btn">
+        <img src="/images/amigos/partida_privada.png" alt="Partida Privada" class="icon" />
+        <span>Partida Privada</span>
+      </button>
+      <div class="dropdown-menu" id="dropdown-menu">
+        <button class="dropdown-item">Crear Partida</button>
+        <button class="dropdown-item">Unirse a Partida</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- MODAL FORMULARIO AÑADIR AMIGOS -->
+    <div id="add-friend-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header"> <!-- Nuevo contenedor flex -->
+          <h3>Agregar un amigo</h3>
+          <span class="close">&times;</span>
+        </div>
+        <input type="text" id="friend-name" placeholder="Introduce el nombre" required />
+        <button id="send-request-btn">Enviar solicitud</button>
+      </div>
+    </div>
+
+  <div id="notification" class="notification"></div>
+  <!-- Componente React -->
+  <client:only>
+    <script>
+      import type { UUIDTypes } from "uuid";
+
+      interface Friend {
+        User1: {
+          username: string;
+          id: UUIDTypes;
+          lastConnection: string;
+        };
+        User2: {
+          username: string;
+          id: UUIDTypes;
+          lastConnection: string;
+        };
+      }
+  
+      let friendsData: Friend[] = [];
+      let currentUsername: string = ''; 
+
+      // Función para obtener el nombre de usuario
+      const getUserData = async (userId: string) => {
+        const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+        console.log(`📡 Realizando petición a: ${url}`);
+
+        try {
+          const response = await fetch(url);
+          console.log(`📥 Respuesta recibida. Código de estado: ${response.status}`);
+
+          if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+          const data = await response.json();
+          console.log("✅ Datos obtenidos del servidor:", data.username);
+
+          currentUsername = data.username || "Guest"; // Guardamos el username
+          console.log(`📝 Nombre de usuario actualizado en la interfaz: ${currentUsername}`);
+          //getSolicitudes(); // Llamamos a la función para obtener solicitudes después de obtener el username
+        } catch (error) {
+          console.error("❌ Error obteniendo el nombre del usuario:", error);
+        }
+      };
+
+      // Función para mostrar notificación
+      function showNotification(message : string, type : string) {
+        const notification = document.getElementById("notification");
+
+        if (notification) {
+          console.log("Se debería mostrar la notificacion");
+          notification.textContent = message;
+          notification.className = `notification ${type}`; // 'success' o 'error'
+          notification.style.display = 'block';  // Asegura que la notificación se muestra
+
+          // Después de 5 segundos, empezamos a ocultar la notificación de forma gradual
+          setTimeout(() => {
+            notification.style.opacity = "0";  // Comienza el desvanecimiento
+          }, 5000);
+
+          // Después de la animación de desvanecimiento (1 segundo), ocultamos el elemento
+          setTimeout(() => {
+            notification.style.display = 'none';
+            notification.style.opacity = "1";  // Resetear la opacidad para futuras notificaciones
+          }, 6000);  // 5 segundos de visibilidad + 1 segundo de desvanecimiento
+        }
+      }
+
+      async function removeFriend(userID : UUIDTypes, friendID : UUIDTypes) {
+        try {
+          console.log("📡 Eliminando relación de amistad...");
+          console.log("userID:", userID);
+          console.log("friendID:", friendID);
+
+          // Hacemos la solicitud HTTP al backend usando `fetch`
+          const response = await fetch(`http://localhost:3000/friends/del_friend/${userID}`, {
+            method: "DELETE", // Usamos el método POST para enviar la solicitud
+            headers: {
+              "Content-Type": "application/json", // Indicamos que estamos enviando JSON
+            },
+            body: JSON.stringify({ id: friendID }), // Enviamos el ID del amigo
+          });
+
+          console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.log("❌ Error en la respuesta:", errorText);
+            showNotification("Ha habido un error.", "error");
+            throw new Error("Error al borrar la relación");
+          }
+
+          const data = await response.json();
+          console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
+          await getFriends();
+
+          // Mostrar mensaje de éxito
+          showNotification("Amigo eliminado correctamente.", "success");
+        } catch (error) {
+          console.error("❌ Error al rechazar la solicitud:", error);
+          // Opcionalmente, mostrar mensaje de error al usuario
+          // showNotification("Error al enviar la solicitud. Intenta nuevamente.", "error");
+        }
+      }
+
+      // Función para decodificar el JWT (sin verificar la firma, ya que es del cliente)
+      const decodeJWT = (token : string) => {
+        try {
+          if (!token) return null;
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+          return payload;
+        } catch (error) {
+          console.error("Error decodificando el JWT:", error);
+          return null;
+        }
+      };
+
+      // Función para obtener el ID del usuario desde el accessToken en las cookies
+      const getUserIdFromAccessToken = () => {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+          const [key, value] = cookie.split("=");
+          if (key === "accessToken") {
+            const payload = decodeJWT(value);
+            return payload?.id || null;
+          }
+        }
+        return null;
+      };
+ 
+      const getFriends = async () => {
+        try {
+          const userId = getUserIdFromAccessToken();
+  
+          if (!userId) {
+            console.log("Id no encontrado");
+          } else {
+            console.log("Id encontrado", userId);
+            //Encontrar el username del usuario:
+            await getUserData(userId);
+
+
+            const response = await fetch(`http://localhost:3000/friends/get_friends/${userId}`);
+            const data = await response.json();
+            friendsData = data;
+            console.log("Amigos:", friendsData);
+
+            const friendsList = document.getElementById("friends-list");
+            if (friendsList) {
+              friendsList.innerHTML = friendsData.length > 0
+                ? friendsData.map((friend) => {
+                  const friendData = (friend.User1.id !== userId) ? friend.User1 : friend.User2;
+                  const lastConnectionDate = new Date(friendData.lastConnection);
+                  const hoursAgo = Math.floor((new Date().getTime() - lastConnectionDate.getTime()) / (1000 * 60 * 60)); // Horas desde la última conexión
+                  return `
+                    <div class="friend-item">
+                      <div class="friend-info">
+                        <span class="friend-name"><strong>${friendData.username}</strong></span>
+                        <span class="friend-status">En línea hace ${hoursAgo} horas</span>
+                      </div>
+                      <div class="friend-actions">
+                        <button class="chat-btn" data-friend-id="${friendData.id}"">
+                          <img src="/images/amigos/chat.png" alt="Chat" />
+                        </button>
+                        <button class="remove-btn" data-friend-id="${friendData.id}"">
+                          <img src="/images/amigos/eliminar_amigos.png" alt="Eliminar" />
+                        </button>
+                      </div>
+                    </div>
+                  `;}).join('')
+                : '<div class="no-solicitudes"><p>No tienes amigos todavía.</p></div>';
+
+                // Eliminar las solicitudes de amistad
+                
+                const chatButtons = document.querySelectorAll('.chat-btn');
+                chatButtons.forEach(button => {
+                  button.addEventListener('click', async () => {
+                    console.log("Click detectado chat");
+                    const friendID = button.getAttribute('data-friend-id');
+                    if (friendID && userId) {
+                      window.location.href = `/chat?userId=${userId}&friendId=${friendID}`;
+                    }
+                  });
+                });
+                
+                // Mostrar el confirm de rechazo de solicitud
+                const removeFriendButtons = document.querySelectorAll('.remove-btn');
+                let currentFriendID: string | null = null;
+
+                removeFriendButtons.forEach(button => {
+                  button.addEventListener('click', (e) => {
+                    // Obtener el ID del amigo de la solicitud
+                    currentFriendID = button.getAttribute('data-friend-id');
+                    // Mostrar el confirm de confirmación
+                    const confirm = document.getElementById('remove-friend-confirm');
+                    if (confirm) confirm.style.display = 'flex';
+                  });
+                });
+
+                // Cancelar la acción de rechazo
+                const cancelRemoveBtn = document.getElementById('cancel-remove-btn');
+                if (cancelRemoveBtn) {
+                  cancelRemoveBtn.addEventListener('click', () => {
+                    const confirm = document.getElementById('remove-friend-confirm');
+                    if (confirm) confirm.style.display = 'none'; // Cerrar confirm
+                  });
+                }
+
+                // Confirmar el rechazo de la solicitud
+                const confirmRemoveBtn = document.getElementById('confirm-remove-btn');
+                if (confirmRemoveBtn) {
+                  confirmRemoveBtn.addEventListener('click', async () => {
+                    const userId = getUserIdFromAccessToken();
+                    if (userId && currentFriendID) {
+                      await removeFriend(userId, currentFriendID); // Llamamos a la función para rechazar la solicitud
+                      const confirm = document.getElementById('remove-friend-confirm');
+                      if (confirm) confirm.style.display = 'none'; // Cerrar confirm
+                    }
+                  });
+                }
+
+                // Cerrar el confirm al hacer clic en la "X"
+                const closeConfirm = document.querySelector(".close");
+                if (closeConfirm) {
+                  closeConfirm.addEventListener('click', () => {
+                    const confirm = document.getElementById('remove-friend-confirm');
+                    if (confirm) confirm.style.display = 'none'; // Cerrar confirm
+                  });
+                }
+
+
+                const noFriends = friendsList.querySelector('.no-solicitudes') as HTMLElement;
+                if (noFriends) {
+                  noFriends.style.textAlign = 'center';
+                  noFriends.style.fontSize = '18px';
+                  noFriends.style.color = '#ccc';
+                  noFriends.style.fontWeight = 'bold';
+                  noFriends.style.padding = '20px';
+                  noFriends.style.border = '2px dashed #774a9b';
+                  noFriends.style.borderRadius = '10px';
+                  noFriends.style.background = 'rgba(255, 255, 255, 0.05)';
+                  noFriends.style.display = 'flex';
+                  noFriends.style.flexDirection = 'column';
+                  noFriends.style.alignItems = 'center';
+                  noFriends.style.justifyContent = 'center';
+                  noFriends.style.gap = '10px';
+                  noFriends.style.maxWidth = '400px';
+                  noFriends.style.margin = '20px auto';
+                }
+
+                if (friendsData.length > 0) {
+                  const friendItems = friendsList.querySelectorAll('.friend-item');
+                  /* Estilos para las solicitudes */
+    
+                  friendItems.forEach(item => {
+                    const friendItem = item as HTMLElement;
+  
+                    friendItem.style.display = 'flex';
+                    friendItem.style.justifyContent = 'space-between';
+                    friendItem.style.alignItems = 'center';
+                    friendItem.style.background = '#383848';
+                    friendItem.style.padding = '12px';
+                    friendItem.style.borderRadius = '5px';
+                    friendItem.style.marginBottom = '8px';
+                    friendItem.style.width = "600px";
+
+                    const friendInfo = item.querySelector('.friend-info') as HTMLElement;
+                    const friendName = item.querySelector('.friend-name') as HTMLElement;
+                    const friendStatus = item.querySelector('.friend-status') as HTMLElement;
+                    const chatBtn = item.querySelector('.chat-btn') as HTMLElement;
+                    const removeBtn = item.querySelector('.remove-btn') as HTMLElement;
+      
+                    // Estilos para la información del amigo
+                    if (friendInfo) {
+                      friendInfo.style.display = 'flex';
+                      friendInfo.style.flexDirection = 'row';
+                      friendInfo.style.alignItems = 'center';
+                      friendInfo.style.gap = '15px';
+                    }
+                    
+                    if (friendName) {
+                      friendName.style.fontFamily = "'Luckiest Guy', cursive";
+                      friendName.style.fontSize = '28px';
+                      friendName.style.color = '#53E3E6';
+                      friendName.style.letterSpacing = '1px';
+                    }
+                    
+                    if (friendStatus) {
+                      friendStatus.style.color = '#ddd';
+                      friendStatus.style.fontSize = '14px';
+                      friendStatus.style.whiteSpace = 'nowrap';
+                    }
+
+                    if (chatBtn) {
+                      chatBtn.style.backgroundColor = 'none';
+                      chatBtn.style.border = '2px solid blue';
+                      chatBtn.style.borderRadius = '50%';
+                      chatBtn.style.padding = '8px';
+                      chatBtn.style.display = 'flex';
+                      chatBtn.style.justifyContent = 'center';
+                      chatBtn.style.alignItems = 'center';
+                      chatBtn.style.cursor = 'pointer';
+                      chatBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
+                    }
+
+                    if (chatBtn?.querySelector('img')) {
+                      const addImg = chatBtn.querySelector('img');
+                      if (addImg) {
+                        addImg.style.width = '20px';
+                      }
+                    }
+
+                    if (removeBtn) {
+                      removeBtn.style.backgroundColor = 'none';
+                      removeBtn.style.border = '2px solid red';
+                      removeBtn.style.borderRadius = '50%';
+                      removeBtn.style.padding = '8px';
+                      removeBtn.style.display = 'flex';
+                      removeBtn.style.justifyContent = 'center';
+                      removeBtn.style.alignItems = 'center';
+                      removeBtn.style.cursor = 'pointer';
+                      removeBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
+                    }
+
+                    if (removeBtn?.querySelector('img')) {
+                      const removeImg = removeBtn.querySelector('img');
+                      if (removeImg) {
+                        removeImg.style.width = '20px';
+                      }
+                    }
+
+                    // Efecto hover para el botón de aceptar
+                    if (chatBtn) {
+                      chatBtn.addEventListener('mouseover', () => {
+                        chatBtn.style.backgroundColor = 'rgba(57, 126, 204, 0.2)';  // Fondo verde suave
+                        chatBtn.style.transform = 'scale(1.1)';
+                      });
+                      chatBtn.addEventListener('mouseout', () => {
+                        chatBtn.style.backgroundColor = '';  // Vuelve al fondo original
+                        chatBtn.style.transform = '';
+                      });
+                    }
+
+                    // Efecto hover para el botón de eliminar
+                    if (removeBtn) {
+                      removeBtn.addEventListener('mouseover', () => {
+                        removeBtn.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';  // Fondo rojo suave
+                        removeBtn.style.transform = 'scale(1.1)';
+                      });
+                      removeBtn.addEventListener('mouseout', () => {
+                        removeBtn.style.backgroundColor = '';  // Vuelve al fondo original
+                        removeBtn.style.transform = '';
+                      });
+                    }
+
+                    // Estilo para el contenedor de botones
+                    const friendActions = item.querySelector('.friend-actions') as HTMLElement;
+                    if (friendActions) {
+                      friendActions.style.display = 'flex';
+                      friendActions.style.gap = '10px';
+                    }
+                  });
+                }
+            }
+          }
+        } catch (error) {
+          console.error("Error al obtener las amistades:", error);
+        }
+      };
+  
+      getFriends();
+    </script>
+  
+    <div id="friends-list" class="friends-scroll"></div>
+  </client:only>
+</div>
+
+<script>
+import { validate as isUuid, v4 as uuidv4 } from "uuid"; // Importamos funciones necesarias
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Manejo del botón "Añadir amigo" y el modal
+  const addFriendBtn = document.getElementById("add-friend-btn");
+  const modal = document.getElementById("add-friend-modal");
+  const closeModal = document.querySelector(".close");
+  const sendRequestBtn = document.getElementById("send-request-btn");
+
+  // Manejo del botón "Añadir amigo"
+  if (addFriendBtn && modal && closeModal && sendRequestBtn) {
+    // Mostrar modal al hacer clic en "Añadir amigos"
+    addFriendBtn.addEventListener("click", function () {
+      modal.style.display = "flex";
+    });
+
+    // Cerrar modal al hacer clic en la "X"
+    closeModal.addEventListener("click", function () {
+      modal.style.display = "none";
+    });
+
+    // Cerrar modal si se hace clic fuera del contenido
+    window.addEventListener("click", function (event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+
+    // Enviar solicitud de amistad
+    sendRequestBtn.addEventListener("click", async function () {
+      const friendNameInput = document.getElementById("friend-name") as HTMLInputElement;
+      const friendName = friendNameInput ? friendNameInput.value.trim() : "";
+
+      if (friendName) {
+        try {
+          const userId = getUserIdFromAccessToken();
+
+          if (userId) {
+            if (!isUuid(userId)) {
+              console.warn("El ID proporcionado no es un UUID válido. Se generará uno nuevo.");
+              return;
+            }
+
+            const userData = await getIDUser(friendName);
+
+            // Enviar solicitud de amistad al backend
+            await sendFriendRequest(userId, userData.id);
+
+            modal.style.display = "none"; // Cerrar modal después de enviar
+          }
+        } catch (error) {
+          console.error("❌ Error al procesar la solicitud de amistad:", error);
+        }
+      } else {
+        alert("Por favor, introduce un nombre.");
+      }
+    });
+  }
+
+  // Función para obtener el nombre del usuario mediante su ID
+  async function getIDUser(username : string) {
+    const url = `http://localhost:3000/main-screen/get-id/${username}`;
+    console.log(`📡 Realizando petición a: ${url}`);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        const errorText = await response.text(); // Obtener el mensaje de error desde el backend
+        console.log("❌ Error en la respuesta:", errorText);
+        showNotification("No existe ningún usuario con ese username.", "error");  // Mostrar notificación de error
+
+        // Cerrar el modal cuando ocurre un error
+        const modal = document.getElementById("add-friend-modal");
+        if (modal) {
+          modal.style.display = "none";  // Cerrar el modal
+        }
+
+        throw new Error("Error al obtener datos del usuario");
+      }
+
+      const data = await response.json();
+      console.log("✅ Datos obtenidos del servidor:", data.id);
+      return data;
+    } catch (error) {
+      console.error("❌ Error al obtener el ID de usuario:", error);
+      showNotification("Hubo un problema al obtener el usuario. Intenta nuevamente.", "error");  // Notificación de error
+
+      // Cerrar el modal cuando ocurre un error
+      const modal = document.getElementById("add-friend-modal");
+      if (modal) {
+        modal.style.display = "none";  // Cerrar el modal
+      }
+    }
+  }
+
+  // Función para decodificar el JWT (sin verificar la firma, ya que es del cliente)
+  const decodeJWT = (token : string) => {
+    try {
+      if (!token) return null;
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+      return payload;
+    } catch (error) {
+      console.error("Error decodificando el JWT:", error);
+      return null;
+    }
+  };
+
+  // Función para obtener el ID del usuario desde el accessToken en las cookies
+  const getUserIdFromAccessToken = () => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [key, value] = cookie.split("=");
+      if (key === "accessToken") {
+        const payload = decodeJWT(value);
+        return payload?.id || null;
+      }
+    }
+    return null;
+  };
+
+  // Función para mostrar notificación
+  function showNotification(message : string, type : string) {
+    const notification = document.getElementById("notification");
+
+    if (notification) {
+      console.log("Se debería mostrar la notificacion");
+      notification.textContent = message;
+      notification.className = `notification ${type}`; // 'success' o 'error'
+      notification.style.display = 'block';  // Asegura que la notificación se muestra
+
+      // Después de 5 segundos, empezamos a ocultar la notificación de forma gradual
+      setTimeout(() => {
+        notification.style.opacity = "0";  // Comienza el desvanecimiento
+      }, 5000);
+
+      // Después de la animación de desvanecimiento (1 segundo), ocultamos el elemento
+      setTimeout(() => {
+        notification.style.display = 'none';
+        notification.style.opacity = "1";  // Resetear la opacidad para futuras notificaciones
+      }, 6000);  // 5 segundos de visibilidad + 1 segundo de desvanecimiento
+    }
+  }
+
+  // Función para enviar la solicitud de amistad
+  async function sendFriendRequest(userID: string, friendID: string) {
+    try {
+      console.log("📡 Enviando solicitud de amistad...");
+      console.log("userID:", userID);
+      console.log("friendID:", friendID);
+
+      // Hacemos la solicitud HTTP al backend usando `fetch`
+      const response = await fetch(`http://localhost:3000/friends/add_solicitud/${userID}`, {
+        method: "POST", // Usamos el método POST para enviar la solicitud
+        headers: {
+          "Content-Type": "application/json", // Indicamos que estamos enviando JSON
+        },
+        body: JSON.stringify({ id: friendID }), // Enviamos el nombre del amigo como 'id' en el cuerpo de la solicitud
+      });
+
+      console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
+
+      // Si la respuesta no es exitosa, lanzamos un error
+      
+      if (!response.ok) {
+        const errorText = await response.text(); // Obtener el mensaje de error desde el backend
+        console.log("❌ Error en la respuesta:", errorText);
+        showNotification("Los usuarios ya son amigos.", "error");
+        throw new Error("Error al enviar la solicitud");
+      }
+      
+
+      // Si la respuesta es exitosa, intentamos obtener los datos del servidor
+      const data = await response.json();
+      console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
+
+      // Mostrar mensaje de éxito
+      showNotification("Solicitud enviada correctamente.", "success");
+    } catch (error) {
+      console.error("❌ Error al enviar la solicitud:", error); // Mostrar error detallado en la consola
+      //showNotification("Error al enviar la solicitud. Intenta nuevamente.", "error");
+    }
+  }
+
+  // Manejo del botón para el match privado
+  const privateMatchBtn = document.getElementById("private-match-btn");
+  const dropdown = document.getElementById("dropdown-menu");
+
+  if (privateMatchBtn && dropdown) {
+    privateMatchBtn.addEventListener("click", function () {
+      dropdown.classList.toggle("show");
+    });
+
+    document.addEventListener("click", function (event) {
+      const target = event.target as Node;
+      if (!privateMatchBtn.contains(target) && !dropdown.contains(target)) {
+        dropdown.classList.remove("show");
+      }
+    });
+  }
+});
+
+</script>
+
+<style>
+/* 🔹 RESET GENERAL */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🔹 ELIMINAR SCROLL HORIZONTAL */
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  background-color: #282032;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: hidden;
+}
+
+/* 🔹 NAVBAR OCUPANDO TODO EL ANCHO */
+.navbar-container {
+  width: 100%;
+  position: sticky; /* 🔹 AHORA SE MUEVE CON EL SCROLL */
+  top: 0;
+  left: 0;
+  background: #282032;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+Navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+/* 🔹 LOGO SUPERPUESTO AL NAVBAR */
+.logo-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  z-index: 1001; /* Más alto que la NavBar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 20px; /* Espacio entre elementos */
+}
+
+.logo-container img {
+  width: 120px; /* Ajustar tamaño si es necesario */
+  height: auto;
+}
+
+/* 🔹 CONTENEDOR PRINCIPAL */
+.container {
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #282032;
+  padding: 20px;
+  margin-top: 80px; /* Ajuste para que no tape la NavBar */
+}
+
+/* 🔹 CABECERA */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  margin-top: -70px;
+}
+
+.title {
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 1px; /* Opcional: mejora la legibilidad */
+}
+
+/* 🔹 TABS OCUPANDO TODO EL ANCHO */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 620px;
+  background: #3e005a;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  background: #57257a;
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  transition: background 0.3s ease;
+  flex: 1; /* 🔹 Distribuye el espacio equitativamente */
+  justify-content: center;
+}
+
+.tab:hover {
+  background: #282032;
+}
+
+.icon {
+  width: 24px;
+  height: auto;
+}
+
+.badge {
+  background: green;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+/* 🔹 DROPDOWN */
+.tab-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%; /* 🔹 Mueve el menú a la derecha */
+  background: #57257a;
+  border-radius: 10px;
+  overflow: hidden;
+  width: max-content; /* 🔹 Para que se ajuste al contenido */
+  min-width: 150px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
+  background: #57257a;
+  color: white;
+  border: none;
+  font-size: 14px;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background: #3e005a;
+}
+
+/* 🔹 LISTA DE AMIGOS */
+.friends-list {
+  background: #666;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: left;
+  width: 100%;
+  max-width: 800px;
+}
+
+.friends-scroll {
+  max-height: 400px; /* Ajusta según lo que necesites */
+  overflow-y: auto;
+  padding-right: 10px; /* para evitar que el scroll tape contenido */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.friends-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.friends-scroll::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+.friends-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 🔹 MODAL (FORMULARIO AÑADIR AMIGOS) */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #3e005a;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 300px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between; /* Separa título y X */
+    align-items: center; /* Centra verticalmente */
+    width: 100%;
+    margin-bottom: 15px; /* Espacio debajo del header */
+}
+
+.modal-content h3 {
+  margin: 0;
+  color: #ccc;
+}
+
+.close {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+    /* Posición relativa (ya no absolute) */
+  }
+
+.modal-content input {
+  padding: 8px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.modal-content button {
+  background: #57257a;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: #3e005a;
+}
+
+/* 🔹 BOTÓN DE CERRAR MODAL */
+.close {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+/* 🔹 NOTIFICACIÓN */
+.notification {
+  position: fixed;
+  top: 215px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 30px;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  display: block;
+  z-index: 1000;
+  max-width: 300px;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1s ease-out; /* Añadimos la animación de desvanecimiento */
+}
+
+.notification.success {
+  background-color: green;
+}
+
+.notification.error {
+  background-color: red;
+}
+
+/* 🔹 CONFIRMACION PARA ELIMINAR AMIGOS */
+.confirm {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-content {
+    background: #4f2b5e;  /* Color de fondo */
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 350px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin: 0 10px;
+}
+
+.confirm-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.confirm-content h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.close {
+    font-size: 30px;
+    cursor: pointer;
+    color: #fff;
+    margin-left: 10px;
+}
+
+.confirm-content p {
+    color: #ccc;
+    font-size: 16px;
+    margin: 0;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.confirm-btn, .cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn {
+    background-color: #6ab04c; /* Verde suave */
+    color: white;
+}
+
+.confirm-btn:hover {
+    background-color: #5aa044;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background-color: #e74c3c; /* Rojo suave */
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+  
+
+
+/* 🔹 RESPONSIVE */
+@media (max-width: 768px) {
+  .tabs {
+    flex-direction: column;
+    width: 90%;
+  }
+
+  .tab {
+    width: 100%;
+  }
+
+  .friends-list {
+    width: 90%;
+  }
+
+  .logo-container img {
+    width: 100px;
+  }
+}
+</style>
+

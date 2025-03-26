@@ -6,7 +6,9 @@ import ProgressBar from "../components/ProgressBar.astro";
   <!-- Sección izquierda: Usuario -->
   <div class="user-section">
     <div class="user-icon-container">
-      <img src="/images/icono_usuario.png" alt="User Icon" class="user-icon" />
+      <a id="profile-link">
+        <img src="/images/icono_usuario.png" alt="User Icon" class="user-icon" />
+      </a>
       <span id="username" class="username">Guest</span>
     </div>
 
@@ -43,20 +45,35 @@ import ProgressBar from "../components/ProgressBar.astro";
   import { validate as isUuid, v4 as uuidv4 } from "uuid"; // Importamos funciones necesarias
 
   document.addEventListener("DOMContentLoaded", async () => {
-    function getCookie(name : string) {
-      const cookies = document.cookie.split('; ');
-      for (let cookie of cookies) {
-        const [key, value] = cookie.split('=');
-        if (key === name) {
-            return value;
+    function decodeJWT(token : string) {
+        try {
+          if (!token) return null;
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+          return payload;
+        } catch (error) {
+          console.error("Error decodificando el JWT:", error);
+          return null;
         }
-      }
-      return null;
-    }
+      };
 
-    const userId = getCookie("id");
-    const accessToken = getCookie("accessToken");
-    const isAuthenticated = !!accessToken;
+      // Función para obtener el ID del usuario desde el accessToken en las cookies
+      function getUserIdFromAccessToken() {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+          const [key, value] = cookie.split("=");
+          if (key === "accessToken") {
+            const payload = decodeJWT(value);
+            return payload?.id || null;
+          }
+        }
+        return null;
+      };
+
+    const userId = getUserIdFromAccessToken();
+    // const accessToken = getCookie("accessToken");
+    const isAuthenticated = !!userId;
     const usernameElement = document.getElementById("username");
     const contenido = document.getElementById("usuario-contenido");
 
@@ -86,7 +103,7 @@ import ProgressBar from "../components/ProgressBar.astro";
       }
     }
 
-    if (accessToken && contenido != null) {
+    if (userId && contenido != null) {
       contenido.innerHTML = `<div><!-- Barra de progreso --></div>`;
     } else if (contenido != null){
       contenido.innerHTML = `
@@ -109,11 +126,13 @@ import ProgressBar from "../components/ProgressBar.astro";
   }
 
   // Modificar enlaces según autenticación
+  const profileLink = document.getElementById('profile-link');
   const storeLink = document.getElementById('store-link');
   const achievementsLink = document.getElementById('achievements-link');
   const friendsLink = document.getElementById('friends-link');
   const configLink = document.getElementById('configuration-link');
 
+  if (profileLink instanceof HTMLAnchorElement) profileLink.href = isAuthenticated ? "/profile" : "/login";
   if (storeLink instanceof HTMLAnchorElement) storeLink.href = isAuthenticated ? "/store" : "/login";
   if (achievementsLink instanceof HTMLAnchorElement) achievementsLink.href = isAuthenticated ? "/achievements" : "/login";
   if (friendsLink instanceof HTMLAnchorElement) friendsLink.href = isAuthenticated ? "/friends" : "/login";
