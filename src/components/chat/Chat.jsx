@@ -109,7 +109,7 @@ export default function Chat() {
 
   return (
     <div className="chat-wrapper">
-      <h2 className="chat-title">Chat con {friendUsername}</h2>
+      <h2 className="chat-title">CHAT CON {friendUsername}</h2>
 
       <div className="chat-box friends-scroll">
         {messages.length > 0 ? (
