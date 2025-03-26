@@ -255,7 +255,7 @@ import Navbar from "../components/Navbar.astro";
                     console.log("Click detectado chat");
                     const friendID = button.getAttribute('data-friend-id');
                     if (friendID && userId) {
-                      window.location.href = `/chat`;
+                      window.location.href = `/chat?userId=${userId}&friendId=${friendID}`;
                     }
                   });
                 });

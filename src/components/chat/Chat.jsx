@@ -1,84 +1,149 @@
 import { useState, useEffect, useRef } from "react";
-import "../../styles/chat.css"; // Asegúrate de que la ruta sea correcta
+import "../../styles/chat.css";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const chatEndRef = useRef(null); // 🔹 Referencia al final del chat
+  const [isLoading, setIsLoading] = useState(true);
+  const [friendUsername, setFriendUsername] = useState("");
+  const chatEndRef = useRef(null);
 
-  const currentUser = "user1"; // 🔹 Simulación del usuario actual
+  // Obtener parámetros de la URL
+  const queryParams = new URLSearchParams(window.location.search);
+  const currentUser = queryParams.get("userId");
+  const friendId = queryParams.get("friendId");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const stored = localStorage.getItem("chat-messages");
-    if (stored) {
-      setMessages(JSON.parse(stored));
-    } else {
-      const dummy = [
-        { id: 1, sender: "user2", text: "Hola, ¿cómo estás?", time: "11:45" },
-        { id: 2, sender: "user1", text: "Muy bien, ¿y tú?", time: "11:46" }
-      ];
-      setMessages(dummy);
-      localStorage.setItem("chat-messages", JSON.stringify(dummy));
-    }
-  }, []);
-
-  // 🔹 Hacer scroll automático al último mensaje cuando se cargue o se agregue uno nuevo
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const sendMessage = () => {
-    if (input.trim() !== "") {
-      const newMessage = {
-        id: Date.now(),
-        sender: currentUser,
-        text: input,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      };
-      const updated = [...messages, newMessage];
-      setMessages(updated);
-      localStorage.setItem("chat-messages", JSON.stringify(updated));
-      setInput("");
+  // Función para obtener el username del amigo
+  const getFriendUsername = async (userId) => {
+    const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      
+      const data = await response.json();
+      setFriendUsername(data.username || `Usuario ${userId}`);
+    } catch (error) {
+      console.error("Error obteniendo el nombre del usuario:", error);
+      setFriendUsername(`Usuario ${userId}`);
     }
   };
 
+  // Función para cargar mensajes directamente desde la BD
+  const fetchMessages = async () => {
+    if (!currentUser || !friendId) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:3000/messages/get_messages/${currentUser}/${friendId}`
+      );
+      
+      if (!response.ok) throw new Error("Error al obtener mensajes");
+      
+      const data = await response.json();
+      
+      // Actualizamos el estado solo con los datos frescos de la BD
+      setMessages(data || []);
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cargar mensajes al inicio y cada cierto tiempo
+  useEffect(() => {
+    if (friendId) {
+      getFriendUsername(friendId);
+      fetchMessages();
+    }
+    
+    // Opcional: Recargar mensajes periódicamente
+    //const interval = setInterval(fetchMessages, 5000); // Cada 5 segundos
+    
+    //return () => clearInterval(interval);
+  }, [currentUser, friendId]);
+
+  // Scroll al final cuando hay nuevos mensajes
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView();
+  }, [messages]);
+
+  // Enviar mensaje (guardar en BD y luego recargar)
+  const sendMessage = async () => {
+    if (input.trim() !== "") {
+      const newMessage = {
+        id: Date.now(),  // Usamos el timestamp como ID único
+        id_friend_emisor: currentUser,
+        id_friend_receptor: friendId,
+        content: input,
+        date: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+
+      // Enviar el mensaje a la base de datos
+      try {
+        const response = await fetch(`http://localhost:3000/messages/add_message/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newMessage),
+        });
+
+        const result = await response.json();
+        if (result.message === "Mensaje enviado correctamente.") {
+          // Si el mensaje se envió correctamente, actualizar los mensajes
+          await fetchMessages();
+          setInput("");
+        } else {
+          console.error("❌ Error al enviar el mensaje:", result.message);
+        }
+      } catch (error) {
+        console.error("❌ Error al enviar el mensaje:", error);
+      }
+    }
+  };
+
+  if (isLoading) return <div className="loading">Cargando mensajes...</div>;
+
   return (
     <div className="chat-wrapper">
-      <h2 className="chat-title">Chat con ...</h2>
+      <h2 className="chat-title">Chat con {friendUsername}</h2>
 
-      {/* 🔹 Caja de mensajes con scroll */}
-      <div className="chat-box overflow-y-auto h-80">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} sender={msg.sender} text={msg.text} time={msg.time} isUser={msg.sender === currentUser} />
-        ))}
-        <div ref={chatEndRef} /> {/* 🔹 Este elemento "fantasma" ayuda a hacer scroll */}
+      <div className="chat-box friends-scroll">
+        {messages.length > 0 ? (
+          messages.map(msg => (
+            <MessageBubble 
+              key={msg.id}
+              sender={msg.id_friend_emisor}
+              text={msg.content}
+              time={msg.date || new Date().toLocaleTimeString()}
+              isUser={msg.id_friend_emisor === currentUser}
+            />
+          ))
+        ) : (
+          <div className="no-messages"></div>
+        )}
+        <div ref={chatEndRef} />
       </div>
 
-      <form className="chat-form" onSubmit={(e) => e.preventDefault()}>
+      <form className="chat-form" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
         <input
           type="text"
           className="chat-input"
           placeholder="Escribe un mensaje..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              sendMessage();
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button type="button" className="chat-button" onClick={sendMessage}>
+        <button type="submit" className="chat-button">
           Enviar
         </button>
       </form>
     </div>
   );
 }
-
-
 
 function MessageBubble({ sender, text, time, isUser }) {
   return (
@@ -103,5 +168,3 @@ function MessageBubble({ sender, text, time, isUser }) {
     </div>
   );
 }
-
-
