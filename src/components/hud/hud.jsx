@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import "../styles/global.css"; // Asegúrate de que global.css no sobrescriba estos estilos
+import "../../styles/global.css"; // Asegúrate de que global.css no sobrescriba estos estilos
 
 // Datos de votación (fijos)
 const voteResults = { yes: 66, no: 33 };

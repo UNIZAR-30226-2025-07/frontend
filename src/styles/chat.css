@@ -1,14 +1,14 @@
 /* 🔹 Estilo del título "Chat" */
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+
 .chat-title {
-    color: white;
-    font-size: 32px;
-    font-weight: bold;
-    text-align: center;
-    font-family: 'Luckiest Guy', cursive;
-    letter-spacing: 1px;
-    margin-bottom: 20px; /* 🔹 Espacio entre el título y el chat */
-  }
-  
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 1px; /* Opcional: mejora la legibilidad */
+}
   /* 🔹 Contenedor del chat */
   .chat-wrapper {
     display: flex;
