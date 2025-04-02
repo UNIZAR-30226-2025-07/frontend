@@ -1,5 +1,353 @@
 ---
-import AchieveList from "../components/achievements/AchieveList.astro";
+// Importar la función para mostrar las solicitudes de amistad
+import Logo from "../components/Logo.astro";
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
 ---
 
-<AchieveList />
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap">
+</head>
+
+<Layout />
+
+<!-- NAVBAR -->
+<div class="navbar-container">
+  <Navbar />
+</div>
+
+<!-- LOGO -->
+<div class="logo-container">
+  <Logo />
+</div>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="container">
+  <header class="header">
+    <h2 class="title">LOGROS</h2>
+  </header>
+
+  <!-- LISTA DE LOGROS -->
+  <client:only>
+    <script type="module">
+      const decodeJWT = (token) => {
+        try {
+          if (!token) return null;
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+          return payload;
+        } catch (error) {
+          console.error("Error decodificando el JWT:", error);
+          return null;
+        }
+      };
+    
+      const getUserIdFromAccessToken = () => {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+          const [key, value] = cookie.split("=");
+          if (key === "accessToken") {
+            const payload = decodeJWT(value);
+            return payload?.id || null;
+          }
+        }
+        return null;
+      };
+
+      async function reclamarLogro(userID, logroID) {
+        try {
+          console.log("📡 Reclamando logro");
+          console.log("userID:", userID);
+
+          // Hacemos la solicitud HTTP al backend usando `fetch`
+          const response = await fetch(`http://localhost:3000/achievements/unlock-achievement`, {
+            method: "POST", // Usamos el método POST para enviar la solicitud
+            headers: {
+              "Content-Type": "application/json", // Indicamos que estamos enviando JSON
+            },
+            body: JSON.stringify({ user_id: userID, achievement_id: logroID }), // Enviamos el ID del amigo
+          });
+
+          console.log("🔍 Código de estado de la respuesta:", response.status); // Verifica el código de estado de la respuesta
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.log("❌ Error en la respuesta:", errorText);
+            showNotification("Ha habido un error.", "error");
+            throw new Error("Error al reclamar el logro");
+          }
+
+          const data = await response.json();
+          console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
+          await getLogros();
+
+        } catch (error) {
+          console.error("❌ Error al rechazar la solicitud:", error);
+          // Opcionalmente, mostrar mensaje de error al usuario
+          // showNotification("Error al enviar la solicitud. Intenta nuevamente.", "error");
+        }
+      }
+
+    
+      const getLogros = async () => {
+        try {
+          const userId = getUserIdFromAccessToken();
+    
+          if (!userId) {
+            console.log("ID de usuario no encontrado");
+            return;
+          }
+    
+          const response = await fetch(`http://localhost:3000/achievements/achievements/${userId}`);
+          const data = await response.json();
+          const logros = data.achievements || [];
+    
+          const logrosList = document.getElementById("logros-list");
+          if (!logrosList) return;
+    
+          if (logros.length === 0) {
+            logrosList.innerHTML = `<p>No tienes logros disponibles.</p>`;
+            return;
+          }
+    
+          logrosList.innerHTML = logros.map((logro) => {
+            const progreso = Number(logro.current_value);
+            const meta = Number(logro.objective_value);
+            const porcentaje = Math.min(Math.round((progreso / meta) * 100), 100);
+            const logroCompletado = progreso >= meta;
+    
+            return `
+              <div class="logro-item">
+                <div class="logro-info">
+                  <span class="logro-tarea"><strong>${logro.name}</strong></span>
+                  <span class="logro-progreso">${progreso}/${meta}</span>
+                </div>
+                <div class="barra-progreso">
+                  <div class="barra-progreso-llena" style="width: ${porcentaje}%"></div>
+                </div>
+                ${logroCompletado && !logro.achieved
+                  ? `<button class="boton-reclamar" data-logro-id="${logro.id}">Reclamar</button>`
+                  : logro.achieved
+                  ? `<p class="mensaje-reclamado">Ya reclamado</p>`
+                  : ''
+                }
+              </div>
+            `;
+          }).join("");
+
+          const reclamarButtons = document.querySelectorAll('.boton-reclamar');
+          reclamarButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+              const logroID = button.getAttribute('data-logro-id');
+              if (logroID) {
+                await reclamarLogro(userId, logroID);
+              }
+            });
+          });
+    
+        } catch (error) {
+          console.error("Error al obtener los logros:", error);
+        }
+      };
+    
+      getLogros();
+    </script>
+  
+    <div id="logros-list" class="logros-scroll"></div>
+  </client:only>
+</div>
+
+
+<style>
+/* 🔹 RESET GENERAL */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🔹 ELIMINAR SCROLL HORIZONTAL */
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  background-color: #282032;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: hidden;
+}
+
+/* 🔹 NAVBAR OCUPANDO TODO EL ANCHO */
+.navbar-container {
+  width: 100%;
+  position: sticky; /* 🔹 AHORA SE MUEVE CON EL SCROLL */
+  top: 0;
+  left: 0;
+  background: #282032;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+Navbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+/* 🔹 LOGO SUPERPUESTO AL NAVBAR */
+.logo-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  z-index: 1001; /* Más alto que la NavBar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 20px; /* Espacio entre elementos */
+}
+
+.logo-container img {
+  width: 120px; /* Ajustar tamaño si es necesario */
+  height: auto;
+}
+
+/* 🔹 CONTENEDOR PRINCIPAL */
+.container {
+  width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #282032;
+  padding: 20px;
+  margin-top: 80px; /* Ajuste para que no tape la NavBar */
+  width: 800px;
+}
+
+/* 🔹 CABECERA */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  margin-top: -70px;
+}
+
+.title {
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 1px; /* Opcional: mejora la legibilidad */
+}
+
+/* 🔹 RESPONSIVE */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 60px;
+    width: 95%;
+  }
+
+  .lista-logros {
+    padding: 10px;
+  }
+}
+</style>
+
+<style is:global>
+
+
+.logros-scroll {
+  max-height: 400px; /* Ajusta según lo que necesites */
+  overflow-y: auto;
+  padding-right: 10px; /* para evitar que el scroll tape contenido */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.logros-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.logros-scroll::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+.logros-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* 🔹 ESTILOS DE LOGRO */
+.logro-item {
+  display: flex;
+  flex-direction: column;
+  background: #383848;
+  padding: 12px;
+  border-radius: 5px;
+  text-align: center;
+  gap: 10px;
+  width: 600px;
+}
+
+
+
+.logro-tarea {
+  color: #53E3E6;
+}
+
+.logro-progreso {
+  color: #ddd;
+}
+
+.barra-progreso {
+  width: 100%;
+  background: #888;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.barra-progreso-llena {
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.4s ease;
+}
+
+/* 🔹 BOTÓN DE RECLAMAR */
+.boton-reclamar {
+  background: #ffcc00;
+  color: #282032;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.boton-reclamar:hover {
+  background: #ffdd44;
+  transform: scale(1.05);
+}
+
+/* 🔹 MENSAJE DE LOGRO RECLAMADO */
+.mensaje-reclamado {
+  color: #ffcc00;
+  font-weight: bold;
+}
+</style>
