@@ -7,22 +7,9 @@ const ConfigurationItem = () => {
 
   const styles = {
     settingsContainer: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      background: "#282032",
-      position: "relative",
+
     },
-    header: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between", // 🔹 Asegura que la flecha y el texto mantengan su espacio
-      width: "100%",
-      maxWidth: "500px", // 🔹 Limita la expansión del header para evitar que se separen demasiado
-      marginBottom: "80px",
-    },
+
     button: {
       background: "none",
       border: "none",
@@ -42,11 +29,11 @@ const ConfigurationItem = () => {
     },
     
     panel: {
-      background: "#200030",
+      background: "#383848",
       padding: "25px",
       borderRadius: "15px",
       width: "800px",
-      minHeight: "320px",
+      minHeight: "350px",
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-around",
@@ -95,10 +82,6 @@ const ConfigurationItem = () => {
 
   return (
     <div style={styles.settingsContainer}>
-      {/* 🔹 Botón de volver y título */}
-      <div style={styles.header}>   
-        <h2 style={styles.title}>CONFIGURACIÓN</h2>
-      </div>
 
       {/* 🔹 Panel de configuración */}
       <div style={styles.panel}>
