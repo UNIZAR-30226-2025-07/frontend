@@ -1,46 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 const StoreComponent = () => {
+  const [items, setItems] = useState([]);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    const lastRefresh = localStorage.getItem("lastStoreRefresh");
+    const now = Date.now();
+
+    let shouldRefresh = true;
+    if (lastRefresh && now - parseInt(lastRefresh) < THREE_DAYS_MS) {
+      shouldRefresh = false;
+    }
+
+    if (shouldRefresh) {
+      const newShopId = Math.floor(Math.random() * 3) + 1;
+      localStorage.setItem("shopId", newShopId.toString());
+      localStorage.setItem("lastStoreRefresh", now.toString());
+    }
+
+    const shopId = localStorage.getItem("shopId");
+
+    fetch(`http:///localhost:3000/shop/shop/getItems/${shopId}`)
+      .then((res) => res.json())
+      .then((data) => setItems(data))
+      .catch((err) => console.error("Error al cargar tienda:", err));
+
+    const interval = setInterval(() => {
+      const last = parseInt(localStorage.getItem("lastStoreRefresh") || "0");
+      setCountdown(THREE_DAYS_MS - (Date.now() - last));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatCountdown = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return `${h.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
   const styles = {
-    container: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      background: "#282032",
-      color: "white",
-      fontFamily: "Arial, sans-serif",
-      marginTop: "160px",
-    },
-    header: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      width: "100%",
-      maxWidth: "700px",
-      marginTop: "-110px",
-    },
-    backButton: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "5px",
-      display: "flex",
-      alignItems: "center",
-    },
-    title: {
-      fontSize: "36px",
-      fontWeight: "bold",
-      textAlign: "center",
-      flexGrow: 1,
-    },
     storeContainer: {
       display: "grid",
-      gridTemplateColumns: "3fr 1fr", // Tienda en 3 partes, pase de batalla en 1
-      gap: "20px",
+      gridTemplateColumns: "3fr 1fr",
+      //gap: "20px",
       padding: "20px",
-      background: "#4b2375",
+      background: "#383848",
       borderRadius: "15px",
       width: "90%",
       maxWidth: "800px",
@@ -51,17 +63,13 @@ const StoreComponent = () => {
       gap: "15px",
     },
     item: {
-      background: "#9e8cb8",
+      background: "#57257a",
       padding: "10px",
       borderRadius: "10px",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-    },
-    image: {
-      width: "120px",
-      height: "120px",
-      borderRadius: "10px",
+      width: "220px",
     },
     priceTag: {
       background: "#32baff",
@@ -71,12 +79,13 @@ const StoreComponent = () => {
       marginTop: "5px",
     },
     battlePassContainer: {
-      background: "#9e8cb8",
+      //background: "#9e8cb8",
       padding: "15px",
       borderRadius: "10px",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
+      width: "240px",
     },
     battlePassImage: {
       width: "200px",
@@ -88,46 +97,80 @@ const StoreComponent = () => {
       width: "80px",
       marginTop: "20px",
     },
+    nameText: {
+      fontWeight: "bold",
+      color: "white",
+      marginTop: "10px",
+      textAlign: "center",
+    },
+
+    nameText2: {
+      fontWeight: "bold",
+      color: "white",
+      marginTop: "10px",
+      textAlign: "center",
+      fontSize: "20px"
+    },
+    
+    countdownBox: {
+      background: "#38c172", // verde
+      color: "white",
+      padding: "8px 12px",
+      borderRadius: "10px",
+      fontWeight: "bold",
+      fontSize: "14px",
+      marginBottom: "10px",
+      textAlign: "center",
+      width: "240px"
+    },
+
+    pruebaBox: {
+      background: "#57257a",
+      width: "240px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      borderRadius: "10px",
+      gap: "20px",
+      padding: "20px 20px",
+    }
   };
 
   return (
-    <div style={styles.container}>
-      {/* 🔹 Encabezado con botón de volver */}
-      <div style={styles.header}>
-        <h1 style={styles.title}>Tienda</h1>
+  <div style={styles.storeContainer}>
+  {/* Tienda de ítems */}
+    <div style={styles.itemsGrid}>
+      {items.map((item, index) => (
+        <div key={index} style={styles.item}>
+          <img
+            src={`/images/aspectos/processed_aspecto${index + 1}.png`}
+            alt={item.name_item}
+            style={{ width: "120px", height: "120px", borderRadius: "10px" }}
+          />
+          <div style={styles.nameText}>{item.name_item}</div>
+          <div style={styles.priceTag}>{item.item_price.toFixed(2)} €</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Pase de batalla */}
+    <div style={styles.battlePassContainer}>
+      {/* 🔹 NUEVA TIENDA EN */}
+      <div style={styles.countdownBox}>
+        Nueva tienda en: {formatCountdown(countdown)}
       </div>
 
-      {/* 🔹 Contenedor de la tienda */}
-      <div style={styles.storeContainer}>
-        {/* 🔹 Tienda de aspectos */}
-        <div style={styles.itemsGrid}>
-          <div style={styles.item}>
-            <img src="/images/aspectos/processed_aspecto1.png" alt="Skin 1" style={styles.image} />
-            <div style={styles.priceTag}>4,99 €</div>
-          </div>
-          <div style={styles.item}>
-            <img src="/images/aspectos/processed_aspecto2.png" alt="Skin 2" style={styles.image} />
-            <div style={styles.priceTag}>7,99 €</div>
-          </div>
-          <div style={styles.item}>
-            <img src="/images/aspectos/processed_aspecto3.png" alt="Skin 3" style={styles.image} />
-            <div style={styles.priceTag}>7,99 €</div>
-          </div>
-          <div style={styles.item}>
-            <img src="/images/aspectos/processed_aspecto4.png" alt="Skin 4" style={styles.image} />
-            <div style={styles.priceTag}>4,99 €</div>
-          </div>
-        </div>
-
-        {/* 🔹 Pase de batalla */}
-        <div style={styles.battlePassContainer}>
-          <h2>Pase de batalla</h2>
-          <div style={styles.priceTag}>19,99 €</div>
-          <img src="/images/aspectos/pase_batalla.png" alt="Pase de batalla" style={styles.battlePassImage} />
-          <img src="/images/candado_cerrado.png" alt="Bloqueado" style={styles.lockIcon} />
-        </div>
+      <div style={styles.pruebaBox}>
+      <div style={styles.nameText2}>Pase de batalla</div>
+      <img
+        src="/images/aspectos/pase_batalla.png"
+        alt="Pase de batalla"
+        style={styles.battlePassImage}
+      />
+      <div style={styles.priceTag}>19,99 €</div>
       </div>
     </div>
+  </div>
   );
 };
 
