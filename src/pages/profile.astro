@@ -26,6 +26,8 @@ import Navbar from "../components/Navbar.astro";
 <div id="update-confirm" class="confirm">
   <div class="confirm-content">
     <p>¿Estás seguro de que quieres actualizar tus datos?</p>
+    <label for="confirm-password">Ingresa tu contraseña para confirmar</label>
+    <input type="password" id="confirm-password" name="confirm-password" placeholder="Contraseña actual" />
     <div class="confirm-actions">
       <button id="confirm-update-btn" class="confirm-btn">Aceptar</button>
       <button id="cancel-update-btn" class="cancel-btn">Cancelar</button>
@@ -91,6 +93,12 @@ import Navbar from "../components/Navbar.astro";
       }, 6000);  // 5 segundos de visibilidad + 1 segundo de desvanecimiento
     }
   }
+
+  // Función para validar la contraseña con una expresión regular
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{7,}$/;
+    return regex.test(password);
+  };
 
   // Función para decodificar el JWT (sin verificar la firma, ya que es del cliente)
   const decodeJWT = (token) => {
@@ -160,7 +168,7 @@ import Navbar from "../components/Navbar.astro";
   document.getElementById('logoutButton').addEventListener('click', logout);
 
   // Función para hacer hash de la contraseña usando crypto.subtle
-  async function hashPassword(password) {
+  const hashPassword = async (password) => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -178,6 +186,14 @@ import Navbar from "../components/Navbar.astro";
 
       if (passwordInput.value && passwordInput.value !== passwordBInput.value) {
         showNotification('Las contraseñas no coinciden', 'error');
+        return;
+      }
+
+      if (!validatePassword(passwordInput.value)) {
+        showNotification('La contraseña debe tener al menos 7 caracteres, una mayúscula, un número y un símbolo', 'error');
+        setTimeout(() => {
+
+      }, 2000);
         return;
       }
 
@@ -205,7 +221,7 @@ import Navbar from "../components/Navbar.astro";
       if (!response.ok) throw new Error('Error al actualizar los datos del usuario');
 
       const result = await response.json();
-      showNotification('Datos actualizados correctamente', "success");
+      showNotification('Datos actualizados correctamente. Espere.', "success");
       
       setTimeout(() => {
         window.location.href = '/profile'; // Redirigir después de mostrar la notificación
@@ -272,14 +288,35 @@ import Navbar from "../components/Navbar.astro";
     confirmUpdateButton.addEventListener('click', async () => {
       const userId = getUserIdFromAccessToken();
       const username = document.getElementById('profile-username').value;
-      const password = document.getElementById('password').value;
+      const password = document.getElementById('confirm-password').value;
 
-      if (userId) {
-        await updateUser(userId, username, password);  // Actualiza los datos del usuario
-        closeUpdateConfirm();  // Cierra la ventana de confirmación
-      } else {
-        showNotification('Usuario no encontrado', 'error');
+      // Obtener la contraseña ingresada en el modal de confirmación
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (!confirmPassword) {
+        showNotification('Por favor, ingresa tu contraseña para confirmar', 'error');
+        return;
       }
+
+      const hashedPassword = await hashPassword(password);
+
+      // Verificar la contraseña del usuario con el backend
+      const response = await fetch(`http://localhost:3000/main-screen/verify-password/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password: hashedPassword })
+      });
+
+      if (!response.ok) {
+        showNotification('La contraseña no es correcta', 'error');
+        return;
+      }
+
+      // Si la contraseña es válida, proceder a actualizar los datos
+      await updateUser(userId, username, password);
+      closeUpdateConfirm();  // Cierra la ventana de confirmación
     });
   }
 
