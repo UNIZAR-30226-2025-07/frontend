@@ -1,0 +1,25 @@
+  /* 🔹 NOTIFICACIÓN */
+  .notification {
+    position: fixed;
+    top: 215px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    display: block;
+    z-index: 1000;
+    max-width: 300px;
+    text-align: center;
+    opacity: 1;
+    transition: opacity 1s ease-out; /* Añadimos la animación de desvanecimiento */
+  }
+  
+  .notification.success {
+    background-color: green;
+  }
+  
+  .notification.error {
+    background-color: red;
+  }

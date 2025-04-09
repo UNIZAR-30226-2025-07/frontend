@@ -16,6 +16,11 @@
         .join('');
     }
 
+    async function validatePassword(password: string) : Promise<boolean> {
+      const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{7,}$/;
+      return regex.test(password);
+    };
+
     document.addEventListener("DOMContentLoaded", function () {
       const emailInput = document.querySelector("#email") as HTMLInputElement | null;
       const usernameInput = document.querySelector("#username") as HTMLInputElement | null;
@@ -74,8 +79,13 @@
           errorMessage.style.display = "block";
           return;
         }
-
-        
+        const isPasswordValid = await validatePassword(password);
+        if (!isPasswordValid) {
+          errorMessage.textContent = "La contraseña debe tener al menos 7 caracteres, una mayúscula, un número y un símbolo";
+          errorMessage.style.display = "block";
+          return;
+        }
+  
         // Hashear la contraseña antes de enviarla al backend
         const hashedPassword = await hashPassword(password);
 
