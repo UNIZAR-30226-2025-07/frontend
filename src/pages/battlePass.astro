@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #63a3d9;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+    
+    .title {
+      color: white;
+      font-size: 36px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .subtitle {
+      color: #eaeaea;
+      font-size: 14px;
+    }
+    
+    .page-info {
+      color: white;
+      font-size: 16px;
+    }
+    
+    .level-box {
+      background-color: #3a4559;
+      border: 2px solid #545f73;
+      padding: 5px 15px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 80px;
+    }
+    
+    .level-text {
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    
+    .level-number {
+      font-size: 32px;
+      font-weight: bold;
+    }
+    
+    .stars {
+      display: flex;
+      align-items: center;
+      color: #f8d64e;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    .star-icon {
+      color: #f8d64e;
+      font-size: 16px;
+      margin-right: 5px;
+    }
+    
+    .progress-bar {
+      background-color: #222;
+      height: 10px;
+      width: 150px;
+      border-radius: 5px;
+      margin-top: 5px;
+      position: relative;
+    }
+    
+    .progress {
+      background-color: #f8d64e;
+      height: 100%;
+      width: 70%;
+      border-radius: 5px;
+    }
+    
+    .battle-pass-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+      margin-top: 20px;
+    }
+    
+    .level-numbers {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      background-color: #3a4559;
+      color: white;
+      text-align: center;
+      padding: 5px 0;
+    }
+    
+    .rewards-row {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      height: 100px;
+      gap: 5px;
+    }
+    
+    .reward-cell {
+      background-color: rgba(58, 69, 89, 0.7);
+      border: 1px solid #545f73;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    
+    .reward-item {
+      width: 80%;
+      height: 80%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    
+    .premium-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background-color: white;
+      border-radius: 50%;
+      width: 15px;
+      height: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 10px;
+    }
+    
+    .xp-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background-color: #7ac043;
+      color: white;
+      font-size: 10px;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    
+    .vbucks-badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background-color: #5bc0eb;
+      color: white;
+      font-size: 10px;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    
+    .premium-reward {
+      background-color: #866118;
+    }
+    
+    .highlight {
+      border: 2px solid #f8d64e;
+    }
+    
+    .navigation-arrow {
+      position: absolute;
+      top: 50%;
+      font-size: 30px;
+      color: white;
+      background-color: rgba(58, 69, 89, 0.7);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .arrow-left {
+      left: 10px;
+    }
+    
+    .arrow-right {
+      right: 10px;
+    }
+    
+    .item-purple {
+      background-color: #6a3cb5;
+      width: 70%;
+      height: 70%;
+      border-radius: 5px;
+    }
+    
+    .item-green {
+      background-color: #7ac043;
+      width: 70%;
+      height: 70%;
+      border-radius: 5px;
+    }
+    
+    .item-pink {
+      background-color: #d17bb4;
+      width: 70%;
+      height: 70%;
+      border-radius: 5px;
+    }
+    
+    .item-icon {
+      color: white;
+      font-size: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+
+    .rewards-container {
+    position: relative;
+    margin-top: 20px;
+    border: 2px solid #ffffff33;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    background-color: #2f3a4d;
+  }
+
+  .level-numbers {
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid #ffffff22;
+  }
+
+  .rewards-row {
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid #ffffff11;
+  }
+
+  .reward-cell {
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #3a4559, #2f374a);
+    transition: transform 0.2s ease;
+  }
+
+  .reward-cell:hover {
+    transform: scale(1.05);
+    z-index: 2;
+  }
+
+  .reward-item {
+    width: 80%;
+    height: 80%;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+  }
+
+  .navigation-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 30px;
+    color: white;
+    background-color: rgba(58, 69, 89, 0.8);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.2s ease;
+  }
+
+  .navigation-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .arrow-left {
+    left: -25px;
+  }
+
+  .arrow-right {
+    right: -25px;
+  }
+
+  /* Añadir contenedor para flechas */
+  .nav-wrapper {
+    position: relative;
+  }
+
+  #page-info {
+    text-align: center;
+    color: white;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="level-box">
+        <div class="level-text">NIVEL</div>
+        <div class="level-number" id="current-level">6</div>
+      </div>
+      
+      <div>
+        <div class="stars">
+          <span class="star-icon">★</span> 0/10
+          <div class="progress-bar">
+            <div class="progress"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="title">TEMPORADA 8</div>
+    </div>
+
+    <div class="rewards-container">
+      <div class="nav-wrapper">
+        <div class="navigation-arrow arrow-left" onclick="prevPage()">&#9664;</div>
+        <div class="navigation-arrow arrow-right" onclick="nextPage()">&#9654;</div>
+        
+        <div class="level-numbers" id="level-numbers"></div>
+        <div class="rewards-row" id="free-rewards"></div>
+        <div class="rewards-row" id="premium-rewards"></div>
+      </div>
+    </div>
+    
+    <div id="page-info"></div>
+  </div>
+
+  <script>
+    const hasBattlePass = true;
+    const levelsPerPage = hasBattlePass ? 5 : 8;
+
+    // Simulación de niveles y recompensas
+    const totalLevels = 20;
+    const levelData = Array.from({ length: totalLevels }, (_, i) => ({
+      level: i + 1,
+      freeReward: `<img src="/api/placeholder/50/50?text=F${i + 1}" alt="Free ${i + 1}" />`,
+      premiumReward: `<img src="/api/placeholder/50/50?text=P${i + 1}" alt="Premium ${i + 1}" />`
+    }));
+
+    let currentPage = 0;
+
+    function renderPage() {
+      const start = currentPage * levelsPerPage;
+      const end = start + levelsPerPage;
+      const pageLevels = levelData.slice(start, end);
+
+      document.getElementById('level-numbers')!.innerHTML = pageLevels
+        .map(lvl => `<div>${lvl.level}</div>`)
+        .join('');
+
+      document.getElementById('free-rewards')!.innerHTML = pageLevels
+        .map(lvl => `
+          <div class="reward-cell">
+            <div class="reward-item">
+              ${lvl.freeReward}
+            </div>
+          </div>
+        `).join('');
+
+      document.getElementById('premium-rewards')!.innerHTML = pageLevels
+        .map(lvl => `
+          <div class="reward-cell premium-reward">
+            <div class="reward-item">
+              ${lvl.premiumReward}
+              <div class="premium-badge">&#x1F512;</div>
+            </div>
+          </div>
+        `).join('');
+
+      document.getElementById('page-info')!.textContent = `PÁGINA ${currentPage + 1} / ${Math.ceil(totalLevels / levelsPerPage)}`;
+    }
+
+    function nextPage() {
+      if ((currentPage + 1) * levelsPerPage < totalLevels) {
+        currentPage++;
+        renderPage();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+      }
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>
