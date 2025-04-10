@@ -75,7 +75,7 @@ import Navbar from "../components/Navbar.astro";
           if (!response.ok) {
             const errorText = await response.text();
             console.log("❌ Error en la respuesta:", errorText);
-            showNotification("Ha habido un error.", "error");
+            //showNotification("Ha habido un error.", "error");
             throw new Error("Error al reclamar el logro");
           }
 
