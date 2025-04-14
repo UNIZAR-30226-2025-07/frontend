@@ -1,0 +1,93 @@
+---
+// MusicPlayer.astro
+---
+
+<div id="music-player" class="music-player-hidden">
+    <!-- Componente invisible que gestiona la música -->
+  </div>
+  
+  <script>
+    // Verificar si ya existe una instancia del reproductor
+    const playlist = [
+        '/music/Melendi - Un Violinista En Tu Tejado [eJbIMODHIdw].mp3',
+        '/music/anuncio1.mp3',
+        '/music/Tyler, The Creator - Darling I (LetraLegendado).mp3',
+        '/music/Rels B - SIN MIRAR LAS SEÑALES (Audio).mp3'
+    ];
+
+    if (!window.bgMusicPlayer) {
+      // Lista de canciones - reemplaza con tus rutas reales
+      
+      let currentTrack = 0;
+      const audioPlayer = new Audio();
+      const savedVolume = localStorage.getItem('musicVolume');
+      audioPlayer.volume = savedVolume ? Number(savedVolume) / 100 : 0.38; // Por defecto 38%
+      
+      // Función para cargar y reproducir una canción
+      function playTrack(index : number ) {
+        audioPlayer.src = playlist[index];
+        audioPlayer.play().catch(err => {
+          console.log('Error al reproducir música:', err);
+          // Agregar listener para reproducir con la primera interacción
+          if (!window.musicPlayAttempted) {
+            window.musicPlayAttempted = true;
+            document.addEventListener('click', () => {
+              audioPlayer.play().catch(e => console.log('No se pudo reproducir aún:', e));
+            }, { once: true });
+          }
+        });
+      }
+      
+      // Pasar a la siguiente canción cuando termine la actual
+      audioPlayer.addEventListener('ended', () => {
+        currentTrack = (currentTrack + 1) % playlist.length;
+        playTrack(currentTrack);
+      });
+      
+      // Guardar la referencia del reproductor en el objeto window para mantenerla entre páginas
+      window.bgMusicPlayer = {
+        audioPlayer,
+        isPlaying: false,
+        currentTrack,
+        play: () => {
+          playTrack(currentTrack);
+          window.bgMusicPlayer.isPlaying = true;
+        },
+        pause: () => {
+          audioPlayer.pause();
+          window.bgMusicPlayer.isPlaying = false;
+        }
+      };
+      
+      // Intentar reproducir inicialmente
+      window.bgMusicPlayer.play();
+      
+      // Almacenar el tiempo actual para restaurarlo en otras páginas
+      window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('musicPosition', String(audioPlayer.currentTime));
+        sessionStorage.setItem('musicTrack', String(currentTrack));
+      });
+    } else if (window.bgMusicPlayer && !window.bgMusicPlayer.isPlaying) {
+      // Si existe pero no está reproduciendo, intentar reproducir
+      window.bgMusicPlayer.play();
+    }
+    
+    // Si hay un tiempo guardado, restaurarlo
+    if (sessionStorage.getItem('musicPosition') && window.bgMusicPlayer) {
+      const savedTrack = parseInt(sessionStorage.getItem('musicTrack') || '0');
+      const savedTime = parseFloat(sessionStorage.getItem('musicPosition') || '0');
+      
+      if (savedTrack !== window.bgMusicPlayer.currentTrack) {
+        window.bgMusicPlayer.currentTrack = savedTrack;
+        window.bgMusicPlayer.audioPlayer.src = playlist[savedTrack];
+      }
+      
+      window.bgMusicPlayer.audioPlayer.currentTime = savedTime;
+    }
+  </script>
+  
+  <style>
+    .music-player-hidden {
+      display: none;
+    }
+  </style>
