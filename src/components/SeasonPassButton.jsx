@@ -78,7 +78,7 @@ export default function ProgressBarCard() {
         
         {/* Texto centrado en la barra completa */}
         <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white">
-          {userExperience}/{userLevel === 21 ? 4500 : experienceToNextLevel}
+          {userExperience}/{userLevel === 21 ? 4500 : experienceToNextLevel}XP
         </div>
       </div>
       
