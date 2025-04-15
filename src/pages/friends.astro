@@ -44,7 +44,7 @@ import Navbar from "../components/Navbar.astro";
     <button class="tab active" onclick="window.location.href='http://localhost:4321/requests'">
       <img src="/images/amigos/aceptar_amigos.png" alt="Solicitudes" class="icon" />
       <span>Solicitudes</span>
-      <span class="badge">3</span>
+      <span class="badge">0</span>
     </button>
     <button class="tab" id="add-friend-btn">
       <img src="/images/amigos/agregar_amigos.png" alt="Añadir" class="icon" />
@@ -56,8 +56,8 @@ import Navbar from "../components/Navbar.astro";
         <span>Partida Privada</span>
       </button>
       <div class="dropdown-menu" id="dropdown-menu">
-        <button class="dropdown-item">Crear Partida</button>
-        <button class="dropdown-item">Unirse a Partida</button>
+        <button class="dropdown-item" onclick="window.location.href='/createPG'">Crear Partida</button>
+        <button class="dropdown-item" onclick="window.location.href='/joinPG'">Unirse a Partida</button>
       </div>
     </div>
   </div>
@@ -94,7 +94,8 @@ import Navbar from "../components/Navbar.astro";
       }
   
       let friendsData: Friend[] = [];
-      let currentUsername: string = ''; 
+      let currentUsername: string = '';
+      let solicitudesCount = 0; // Variable para almacenar el número de solicitudes
 
       // Función para obtener el nombre de usuario
       const getUserData = async (userId: string) => {
@@ -204,6 +205,77 @@ import Navbar from "../components/Navbar.astro";
         }
         return null;
       };
+
+      const getSolicitudes = async () => {
+        try {
+          const userId = getUserIdFromAccessToken(); // Obtén el ID del usuario desde el token
+          if (!userId) {
+            console.error("No se pudo obtener el ID del usuario.");
+            return;
+          }
+
+          const response = await fetch(`http://localhost:3000/friends/get_solicitudes/${userId}`);
+          if (!response.ok) {
+            console.error("Error al obtener las solicitudes:", response.status);
+            return;
+          }
+
+          const data = await response.json();
+          solicitudesCount = data.length; // Cuenta el número de solicitudes
+          console.log("Número de solicitudes:", solicitudesCount);
+
+          // Actualiza el contenido del botón de solicitudes
+          const solicitudesBadge = document.querySelector(".badge");
+          if (solicitudesBadge) {
+            solicitudesBadge.textContent = solicitudesCount.toString();
+          }
+        } catch (error) {
+          console.error("Error al obtener las solicitudes:", error);
+        }
+      };
+
+      // Llama a la función para obtener las solicitudes al cargar la página
+      getSolicitudes(); 
+
+      async function checkUnreadMessages(friendID: UUIDTypes) {
+        try {
+          const userID = getUserIdFromAccessToken();
+          if (!userID) {
+            console.error("No se pudo obtener el ID del usuario.");
+            return;
+          }
+          
+          const response = await fetch(`http://localhost:3000/messages/has_not_viewed_messages/${friendID}/${userID}`);
+          
+          if (!response.ok) {
+            console.error(`Error al verificar mensajes: ${response.status}`);
+            return;
+          }
+          
+          const unreadCount = await response.json();
+          const chatButton = document.querySelector(`.chat-btn[data-friend-id="${friendID}"]`);
+          
+          if (!chatButton) return;
+          
+          // Eliminar indicador existente si hay
+          const existingIndicator = chatButton.querySelector(".unread-indicator");
+          if (existingIndicator) {
+            existingIndicator.remove();
+          }
+          console.log(unreadCount);
+          // Añadir indicador solo si hay mensajes no leídos
+          if (unreadCount.message === "Hay mensajes no vistos") {
+            console.log(`📩 Hay ${unreadCount} mensajes pendientes para el usuario:`, userID);
+            const indicator = document.createElement("div");
+            indicator.className = "unread-indicator";
+            chatButton.appendChild(indicator);
+          } else {
+            console.log("✅ No hay mensajes pendientes para el usuario:", userID);
+          }
+        } catch (error) {
+          console.error("❌ Error al verificar mensajes pendientes:", error);
+        }
+      }
  
       const getFriends = async () => {
         try {
@@ -251,10 +323,19 @@ import Navbar from "../components/Navbar.astro";
                 
                 const chatButtons = document.querySelectorAll('.chat-btn');
                 chatButtons.forEach(button => {
+                  const friendID = button.getAttribute('data-friend-id');
+                  if (friendID) {
+                    checkUnreadMessages(friendID); // Verifica si hay mensajes pendientes para cada amigo
+                  }
                   button.addEventListener('click', async () => {
                     console.log("Click detectado chat");
                     const friendID = button.getAttribute('data-friend-id');
                     if (friendID && userId) {
+                      // Eliminar indicador de mensajes no leídos al navegar al chat
+                      const indicator = button.querySelector(".unread-indicator");
+                      if (indicator) {
+                        indicator.remove();
+                      }
                       window.location.href = `/chat?userId=${userId}&friendId=${friendID}`;
                     }
                   });
@@ -345,6 +426,7 @@ import Navbar from "../components/Navbar.astro";
                     const friendName = item.querySelector('.friend-name') as HTMLElement;
                     const friendStatus = item.querySelector('.friend-status') as HTMLElement;
                     const chatBtn = item.querySelector('.chat-btn') as HTMLElement;
+                    const unreadIndicator = item.querySelector('.unread-indicator') as HTMLElement;
                     const removeBtn = item.querySelector('.remove-btn') as HTMLElement;
       
                     // Estilos para la información del amigo
@@ -378,7 +460,31 @@ import Navbar from "../components/Navbar.astro";
                       chatBtn.style.alignItems = 'center';
                       chatBtn.style.cursor = 'pointer';
                       chatBtn.style.transition = 'background-color 0.3s ease, transform 0.2s ease';  // Transición suave para el fondo y la transformación
+                      chatBtn.style.position = 'relative';
                     }
+
+                    if (!document.getElementById('unread-indicator-style')) {
+                      const style = document.createElement('style');
+                      style.id = 'unread-indicator-style';
+                      style.textContent = `
+                        @keyframes pulse {
+                          0% { transform: scale(1); opacity: 1; }
+                          50% { transform: scale(1.5); opacity: 0.5; }
+                          100% { transform: scale(1); opacity: 1; }
+                        }
+                        .unread-indicator {
+                          position: absolute;
+                          top: 5px;
+                          right: 5px;
+                          width: 10px;
+                          height: 10px;
+                          background-color: red;
+                          border-radius: 50%;
+                          animation: pulse 1.5s infinite;
+                        }
+                      `;
+                      document.head.appendChild(style);
+                  }
 
                     if (chatBtn?.querySelector('img')) {
                       const addImg = chatBtn.querySelector('img');
@@ -417,6 +523,15 @@ import Navbar from "../components/Navbar.astro";
                         chatBtn.style.transform = '';
                       });
                     }
+
+                    setInterval(() => {
+                      chatButtons.forEach(button => {
+                        const friendID = button.getAttribute('data-friend-id');
+                        if (friendID) {
+                          checkUnreadMessages(friendID);
+                        }
+                      });
+                    }, 30000); // Comprobar cada 30 segundos
 
                     // Efecto hover para el botón de eliminar
                     if (removeBtn) {
@@ -1057,6 +1172,31 @@ Navbar {
     transform: translateY(-2px);
 }
   
+.unread-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
 
 /* 🔹 RESPONSIVE */

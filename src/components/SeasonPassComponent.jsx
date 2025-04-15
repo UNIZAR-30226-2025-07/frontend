@@ -40,7 +40,12 @@ function BattlePass() {
       .then((res) => res.json())
       .then((data) => {
         if (data && data.level) {
-          setUserLevel(data.level); // Actualiza el nivel del usuario
+          const level = Math.min(data.level, totalLevels); // Limita el nivel máximo al total de niveles
+          setUserLevel(level);
+
+          // Calcula la página inicial basada en el nivel del usuario
+          const initialPage = Math.floor((level - 1) / levelsPerPage);
+          setCurrentPage(initialPage); // Establece la página inicial
         }
       })
       .catch((err) => console.error("Error al obtener el nivel del usuario:", err));
@@ -116,7 +121,10 @@ function BattlePass() {
   // Get current page data
   const start = currentPage * levelsPerPage;
   const end = start + levelsPerPage;
-  const pageLevels = levelData.slice(start, end);
+  //const pageLevels = levelData.slice(start, end);
+  const pageLevels = Array.from({ length: totalLevels }, (_, i) => ({
+    level: i + 1,
+  })).slice(start, end);
 
   // Función para determinar el estilo de fondo del ítem según su estado
   const getItemBackgroundStyle = (item) => {
@@ -141,7 +149,7 @@ function BattlePass() {
         
         <div>
           <div className="stars">
-            <span className="star-icon">★</span> {userExperience}/{experienceToNextLevel}
+            <span className="star-icon">★</span> {userLevel > 4500 ? 4500 : userExperience}/{experienceToNextLevel} XP
             <div className="progress-bar">
             <div
               className="progress"
@@ -160,15 +168,15 @@ function BattlePass() {
 
       <div className="rewards-container">
         <div className="nav-wrapper">
-          <div className="navigation-arrow arrow-left" onClick={prevPage}>&#9664;</div>
-          <div className="navigation-arrow arrow-right" onClick={nextPage}>&#9654;</div>
+          <div className="navigation-arrow arrow-left" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}>&#9664;</div>
+          <div className="navigation-arrow arrow-right" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(totalLevels / levelsPerPage) - 1))}>&#9654;</div>
           
           <div className="level-numbers">
             {pageLevels.map((lvl) => {
               // Determina el color de fondo según el nivel
               const backgroundColor =
                 lvl.level < userLevel
-                  ? "yellow" // Niveles completados
+                  ? "#4e8ef8" // Niveles completados
                   : lvl.level === userLevel
                   ? "green" // Nivel actual
                   : "transparent"; // Niveles no alcanzados

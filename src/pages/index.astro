@@ -2,10 +2,11 @@
 import Navbar from "../components/Navbar.astro";
 import AspectSelector from "../components/AspectSelector.jsx";
 import NicknameInput from "../components/NicknameInput.astro";
-import PlayButton from "../components/PlayButton.astro";
+import PlayButton from "../components/PlayButton.jsx";
 import Logo from "../components/Logo.astro";
 import Layout from "../layouts/Layout.astro";
 import FooterLinks from "../components/FooterLinks.astro";
+import SeasonPassButton from "../components/SeasonPassButton.jsx";
 ---
 
 <Layout />
@@ -25,13 +26,18 @@ import FooterLinks from "../components/FooterLinks.astro";
       <div id="nickname-container" style="display: none;">
         <NicknameInput />
       </div>
-      <PlayButton />
+      <PlayButton client:only/>
     </div>
     
   </div>
   
   <div class="column right-column">
-    <FooterLinks />
+    <div class="season-pass-button" id="season-pass-button-container" style="display: block;">
+      <SeasonPassButton  client:only />
+    </div>
+    <div class="footer-links-buttons" id="footer-links-buttons" >
+      <FooterLinks />
+    </div>
   </div>
 </main>
 
@@ -39,17 +45,18 @@ import FooterLinks from "../components/FooterLinks.astro";
   import { getCookie } from "../utils/cookies";
 
   document.addEventListener('DOMContentLoaded', () => {
-    const nicknameContainer = document.getElementById('nickname-container');
-    console.log("nicknameContainer encontrado:", nicknameContainer !== null); // Verifica si se encuentra el elemento
-    if (nicknameContainer) { // Verifica si el elemento no es null
+    const nicknameContainer = document.getElementById('nickname-container');  
+    const seasonPassButtonContainer = document.getElementById('season-pass-button-container');
+    if (nicknameContainer && seasonPassButtonContainer) { // Verifica si el elemento no es null
       const accessToken = getCookie('accessToken');
       console.log("Valor de accessToken:", accessToken); // Verifica el valor de la cookie
       const isAuthenticated = !!accessToken;
       if (!isAuthenticated) {
         console.log("Usuario autenticado:", isAuthenticated);
         nicknameContainer.style.display = "block";
+        seasonPassButtonContainer.style.display = "none"; // Oculta el botón de pase de temporada
       }
-  }
+    }
   });
 </script>
 
@@ -130,6 +137,23 @@ Navbar {
   flex-direction: column;
   align-items: center;
   gap: 15px; /* Espacio entre el input y el botón */
+}
+
+.right-column {
+  position: relative; /* Necesario para que los elementos absolutos se posicionen dentro de esta columna */
+  height: 100%; /* Asegura que ocupe toda la altura disponible */
+}
+
+.season-pass-button {
+  position: absolute; /* Posiciona el botón de forma absoluta */
+  top: 50vh; /* Coloca el botón al 50% de la altura del viewport */
+  left: 50%; /* Centra horizontalmente */
+  transform: translate(-50%, -50%); /* Ajusta el centrado */
+}
+
+.footer-links-buttons {
+  position: relative; /* Posiciona los FooterLinks de forma absoluta */
+  top: 15vh;
 }
 
 /* Botón de Play ajustado */

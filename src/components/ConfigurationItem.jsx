@@ -1,9 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const ConfigurationItem = () => {
   const [gameVolume, setGameVolume] = useState(82);
   const [musicVolume, setMusicVolume] = useState(38);
   const [isColorBlindMode, setIsColorBlindMode] = useState(true);
+
+  // Efecto para sincronizar el volumen de la música con el reproductor global
+  useEffect(() => {
+    // Si existe el reproductor global, establecemos el volumen inicial
+    if (window.bgMusicPlayer && window.bgMusicPlayer.audioPlayer) {
+      // Actualizar el estado con el volumen actual del reproductor si existe
+      const currentVolume = Math.round(window.bgMusicPlayer.audioPlayer.volume * 100);
+      setMusicVolume(currentVolume);
+    }
+  }, []);
+
+    // Función para actualizar el volumen de la música
+    const handleMusicVolumeChange = (e) => {
+      const newVolume = e.target.value;
+      setMusicVolume(newVolume);
+      
+      // Actualizar el volumen en el reproductor global
+      if (window.bgMusicPlayer && window.bgMusicPlayer.audioPlayer) {
+        window.bgMusicPlayer.audioPlayer.volume = newVolume / 100;
+        // Opcionalmente, guardar en localStorage para recordar entre sesiones
+        localStorage.setItem('musicVolume', newVolume);
+      }
+    };
 
   const styles = {
     settingsContainer: {
@@ -109,13 +132,13 @@ const ConfigurationItem = () => {
             max="100" 
             value={musicVolume} 
             style={styles.slider}
-            onChange={(e) => setMusicVolume(e.target.value)} 
+            onChange={handleMusicVolumeChange} 
           />
         </div>
 
         {/* Modo daltónico */}
         <div style={styles.settingItem}>
-          <span style={styles.settingLabel}><strong>Modo daltónico (alternativo)</strong></span>
+          <span style={styles.settingLabel}><strong>Modo daltónico (en desarrollo)</strong></span>
           <button 
             style={{ 
               ...styles.toggleButton, 

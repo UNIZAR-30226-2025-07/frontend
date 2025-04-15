@@ -1,0 +1,54 @@
+.play-button {
+    width: 160px;
+    height: 65px;
+    background: #171717;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0px 0px 10px 2px rgba(255, 255, 255, 0.2);
+  }
+  
+  .play-button::before {
+    content: "";
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: conic-gradient(from 0deg, #ff2288, #387ef0, #ff2288);
+    opacity: 0.7;
+    filter: blur(20px);
+    border-radius: 50%;
+    animation: glowRotate 4s linear infinite;
+    z-index: 0;
+  }
+  
+  @keyframes glowRotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .play-button span {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .play-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 20px 4px rgba(255, 255, 255, 0.4);
+  }
+  
+  .play-button:active {
+    transform: scale(0.98);
+  }

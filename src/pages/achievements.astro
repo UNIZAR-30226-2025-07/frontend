@@ -82,7 +82,7 @@ import Navbar from "../components/Navbar.astro";
           const data = await response.json();
           console.log("✅ Datos recibidos del servidor:", data); // Verificamos lo que devuelve el servidor
           await getLogros();
-
+          //showNotification("Logro reclamado con éxito", "success");
         } catch (error) {
           console.error("❌ Error al rechazar la solicitud:", error);
           // Opcionalmente, mostrar mensaje de error al usuario
@@ -113,7 +113,7 @@ import Navbar from "../components/Navbar.astro";
           }
     
           logrosList.innerHTML = logros.map((logro) => {
-            const progreso = Number(logro.current_value);
+            const progreso = Math.min(Number(logro.current_value), Number(logro.objective_value));
             const meta = Number(logro.objective_value);
             const porcentaje = Math.min(Math.round((progreso / meta) * 100), 100);
             const logroCompletado = progreso >= meta;
@@ -128,7 +128,7 @@ import Navbar from "../components/Navbar.astro";
                   <div class="barra-progreso-llena" style="width: ${porcentaje}%"></div>
                 </div>
                 ${logroCompletado && !logro.achieved
-                  ? `<button class="boton-reclamar" data-logro-id="${logro.id}">Reclamar</button>`
+                  ? `<button class="boton-reclamar" data-logro-id="${logro.id}">Reclamar ${logro.objective_value}XP</button>`
                   : logro.achieved
                   ? `<p class="mensaje-reclamado">Ya reclamado</p>`
                   : ''
@@ -158,6 +158,7 @@ import Navbar from "../components/Navbar.astro";
     <div id="logros-list" class="logros-scroll"></div>
   </client:only>
 </div>
+
 
 
 <style>
@@ -267,7 +268,7 @@ Navbar {
 
 
 .logros-scroll {
-  max-height: 400px; /* Ajusta según lo que necesites */
+  max-height: 600px; /* Ajusta según lo que necesites */
   overflow-y: auto;
   padding-right: 10px; /* para evitar que el scroll tape contenido */
   width: 100%;

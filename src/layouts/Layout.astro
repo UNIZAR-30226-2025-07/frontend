@@ -1,15 +1,19 @@
+---
+import MusicPlayer from '../components/MusicPlayer.astro';
+---
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<link rel="stylesheet" href="/styles/global.css">
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/images/logo_galaxy.png" />
 		<link rel="stylesheet" href="/styles/global.css">
 		<meta name="generator" content={Astro.generator} />
 		<title>Astro Basics</title>
 	</head>
 	<body>
+		<MusicPlayer  />
 		<slot />
 	</body>
 </html>

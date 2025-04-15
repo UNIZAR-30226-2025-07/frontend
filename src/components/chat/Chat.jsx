@@ -135,7 +135,7 @@ export default function Chat() {
           placeholder="Escribe un mensaje..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          //onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
         <button type="submit" className="chat-button">
           Enviar
