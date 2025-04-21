@@ -44,6 +44,8 @@ import SeasonPassButton from "../components/SeasonPassButton.jsx";
 <script>
   import { getCookie } from "../utils/cookies";
 
+  document.cookie = `skin=Aspecto Básico.png; path=/; SameSite=Lax;`
+
   document.addEventListener('DOMContentLoaded', () => {
     const nicknameContainer = document.getElementById('nickname-container');  
     const seasonPassButtonContainer = document.getElementById('season-pass-button-container');
