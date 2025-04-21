@@ -97,6 +97,7 @@ import ProgressBar from "../components/ProgressBar.astro";
         console.log("✅ Datos obtenidos del servidor:", data.username);
 
         usernameElement.textContent = data.username || "Guest";
+        document.cookie = `username=${data.username}; path=/; SameSite=Lax;`
         console.log(`📝 Nombre de usuario actualizado en la interfaz: ${usernameElement.textContent}`);
       } catch (error) {
         console.error("❌ Error obteniendo el nombre del usuario:", error);

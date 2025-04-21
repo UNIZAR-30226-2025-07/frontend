@@ -25,6 +25,12 @@ const getUserIdFromAccessToken = () => {
   return null;
 };
 
+const setCookie = (name, value, days) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+};
+
 export default function ImageSelector() {
   const userId = getUserIdFromAccessToken();
   const [images, setImages] = useState([]);
@@ -56,8 +62,17 @@ export default function ImageSelector() {
     fetchItems();
   }, [userId]);
 
-  const prevImage = () => setIndex((index - 1 + images.length) % images.length);
-  const nextImage = () => setIndex((index + 1) % images.length);
+  const prevImage = () => {
+    const newIndex = (index - 1 + images.length) % images.length;
+    setIndex(newIndex);
+    setCookie("skin", images[newIndex]?.name + ".png" || "Aspecto Básico.png", 7); // Actualiza la cookie
+  };
+
+  const nextImage = () => {
+    const newIndex = (index + 1) % images.length;
+    setIndex(newIndex);
+    setCookie("skin", images[newIndex]?.name + ".png" || "Aspecto Básico.png", 7); // Actualiza la cookie
+  };
 
   const currentImage = images[index] || { name: "Aspecto Básico" };
 
