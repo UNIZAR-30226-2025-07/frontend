@@ -218,8 +218,26 @@ import Navbar from "../components/Navbar.astro";
             return;
           }
 
-          const data = await response.json();
-          solicitudesCount = data.length; // Cuenta el número de solicitudes
+          interface Solicitud {
+            User1: {
+              username: string;
+              id: UUIDTypes;
+              lastConnection: string;
+            };
+            User2: {
+              username: string;
+              id: UUIDTypes;
+              lastConnection: string;
+            };
+          }
+
+          const data: Solicitud[] = await response.json();
+          const filteredSolicitudes = data.filter((solicitud: Solicitud) => {
+            console.log("currentUsername:", userId);
+            console.log("solicitud.User1.username:", solicitud.User1.id);
+            return solicitud.User1.id !== userId;
+          });
+          solicitudesCount = filteredSolicitudes.length; // Actualiza el contador de solicitudes
           console.log("Número de solicitudes:", solicitudesCount);
 
           // Actualiza el contenido del botón de solicitudes
@@ -1039,7 +1057,7 @@ Navbar {
 }
 
 .modal-content button:hover {
-  background: #3e005a;
+  background: #b068d1;
 }
 
 /* 🔹 BOTÓN DE CERRAR MODAL */

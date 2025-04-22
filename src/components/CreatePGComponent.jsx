@@ -14,15 +14,38 @@ export default function GameLobby() {
   const [maxPlayers, setMaxPlayers] = useState(8);
   const [copied, setCopied] = useState(false);
 
-  const copyCodeToClipboard = () => {
-    navigator.clipboard.writeText(gameCode) // Copia el texto al portapapeles
-      .then(() => {
-        setCopied(true); // Cambia el estado para mostrar "Copiado!"
-        setTimeout(() => setCopied(false), 2000); // Restablece el estado después de 2 segundos
-      })
-      .catch((err) => {
-        console.error("Error al copiar el código:", err); // Maneja errores si ocurre algún problema
-      });
+  const copyCodeToClipboard = async () => {
+    try {
+      // Intenta usar la API moderna del portapapeles
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(gameCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        // Fallback para contextos no seguros (no HTTPS o navegadores antiguos)
+        const textArea = document.createElement('textarea');
+        textArea.value = gameCode;
+        textArea.style.position = 'fixed';  // Evita scroll
+        textArea.style.opacity = '0';       // Invisible
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        // Intenta copiar con el método obsoleto, pero aún funcional
+        const successful = document.execCommand('copy');
+        
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } else {
+          console.error("No se pudo copiar con el método fallback");
+        }
+      }
+    } catch (err) {
+      console.error("Error al copiar el código:", err);
+    }
   };
 
   // Estilos inline para los elementos
