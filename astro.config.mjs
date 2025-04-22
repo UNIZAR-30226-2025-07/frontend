@@ -5,7 +5,7 @@ import react from '@astrojs/react';
 export default defineConfig({
   integrations: [tailwind(), react()],
   devToolbar: {
-    enabled: false,
+    enabled: false, // Disable the dev toolbar in development mode
   },
 });
 
