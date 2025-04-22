@@ -18,7 +18,7 @@
       let currentTrack = 0;
       const audioPlayer = new Audio();
       const savedVolume = localStorage.getItem('musicVolume');
-      audioPlayer.volume = savedVolume ? Number(savedVolume) / 100 : 0.38; // Por defecto 38%
+      audioPlayer.volume = savedVolume ? Number(savedVolume) / 100 : 0.08; // Por defecto 38%
       
       // Función para cargar y reproducir una canción
       function playTrack(index : number ) {
