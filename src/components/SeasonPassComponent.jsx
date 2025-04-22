@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getUserIdFromAccessToken } from '/src/utils/auth.js';
 import { showNotification } from "../utils/notification";
+import { fetchWithToken } from '../utils/fetchWithToken';
 
 function BattlePass() {
   const [currentPage, setCurrentPage] = useState(0);
@@ -36,8 +37,11 @@ function BattlePass() {
   useEffect(() => {
     const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario logueado
     // Obtener el nivel del usuario
-    fetch(`http://localhost:3000/season-pass/season-pass/getUserLevel/${userId}`)
-      .then((res) => res.json())
+    fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getUserLevel/${userId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
         if (data && data.level) {
           const level = Math.min(data.level, totalLevels); // Limita el nivel máximo al total de niveles
@@ -51,29 +55,35 @@ function BattlePass() {
       .catch((err) => console.error("Error al obtener el nivel del usuario:", err));
 
     //Obtener la experiencia del usuario
-    fetch(`http://localhost:3000/season-pass/season-pass/getUserExperience/${userId}`)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data && data.experience !== undefined && data.experience !== null) {
-        setUserExperience(data.experience); // Actualiza el nivel del usuario
-      }
-    })
-    .catch((err) => console.error("Error al obtener la experiencia del usuario:", err));
+    fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getUserExperience/${userId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.experience !== undefined && data.experience !== null) {
+          setUserExperience(data.experience); // Actualiza el nivel del usuario
+        }
+      })
+      .catch((err) => console.error("Error al obtener la experiencia del usuario:", err));
 
     // Obtener la experiencia necesaria para subir de nivel
     console.log("userLevel", userLevel);
-    fetch(`http://localhost:3000/season-pass/season-pass/getExperienceToNextLevel/${userLevel}`)
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("Experiencia necesaria para el siguiente nivel:", data);
-      if (data && data.experience) {
-        setExperienceToNextLevel(data.experience); // Actualiza el nivel del usuario
-      }
-    })
-    .catch((err) => console.error("Error al obtener la experiencia necesaria para el siguiente nivel:", err));
+    fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getExperienceToNextLevel/${userLevel}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Experiencia necesaria para el siguiente nivel:", data);
+        if (data && data.experience) {
+          setExperienceToNextLevel(data.experience); // Actualiza el nivel del usuario
+        }
+      })
+      .catch((err) => console.error("Error al obtener la experiencia necesaria para el siguiente nivel:", err));
 
     // Obtener los ítems del pase de batalla de pago
-    fetch(`http://localhost:3000/season-pass/season-pass/getItemsFromSeasonPass/${userId}/1`)
+    fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getItemsFromSeasonPass/${userId}/1`)
     .then((res) => {
       if (!res.ok) {
         throw new Error(`Error en la respuesta del servidor: ${res.status}`);
@@ -91,30 +101,36 @@ function BattlePass() {
     .catch((err) => console.error("Error al obtener los ítems del pase de batalla de pago:", err));
     
     // Obtener las recompensas gratuitas del pase de batalla
-    fetch(`http://localhost:3000/season-pass/season-pass/getItemsFromLevels/${userId}`)
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("Recompensas gratuitas:", data);
-      if (Array.isArray(data)) {
-        setFreeItems(data); // Actualiza el estado con las recompensas gratuitas
-      } else {
-        console.error("La respuesta de la API no es un array:", data);
-      }
-    })
-    .catch((err) => console.error("Error al obtener las recompensas gratuitas:", err));
+    fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getItemsFromLevels/${userId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Recompensas gratuitas:", data);
+        if (Array.isArray(data)) {
+          setFreeItems(data); // Actualiza el estado con las recompensas gratuitas
+        } else {
+          console.error("La respuesta de la API no es un array:", data);
+        }
+      })
+      .catch((err) => console.error("Error al obtener las recompensas gratuitas:", err));
 
     // Obtener si el usuario tiene desbloqueado el pase de batalla de pago
-    fetch(`http://localhost:3000/season-pass/season-pass/hasUserSP/${userId}/1`)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data && data.unlocked !== undefined) {
-        console.log("Usuario tiene pase de batalla:", data.unlocked);
-        setHasBattlePass(data.unlocked); // Actualiza el estado con el resultado
-      } else {
-        console.error("La respuesta de la API no contiene el campo esperado:", data);
-      }
-    })
-    .catch((err) =>  console.error("Error al obtener el estado del pase de batalla:", err));
+    fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/hasUserSP/${userId}/1`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.unlocked !== undefined) {
+          console.log("Usuario tiene pase de batalla:", data.unlocked);
+          setHasBattlePass(data.unlocked); // Actualiza el estado con el resultado
+        } else {
+          console.error("La respuesta de la API no contiene el campo esperado:", data);
+        }
+      })
+      .catch((err) =>  console.error("Error al obtener el estado del pase de batalla:", err));
   }, [userLevel]);
   
 
@@ -213,12 +229,9 @@ function BattlePass() {
                   try {
                     const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario logueado
                     // Realiza el fetch para reclamar el ítem
-                    const response = await fetch("http://localhost:3000/items/assign-item", {
+                    const response = await fetchWithToken("http://galaxy.t2dc.es:3000/items/assign-item", {
                       method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({ itemId: item.id, userId: userId }), // Asegúrate de enviar el ID correcto
+                      body: JSON.stringify({ itemId: item.id, userId: userId }) // Asegúrate de enviar el ID correcto
                     });
               
                     if (!response.ok) {
@@ -228,8 +241,8 @@ function BattlePass() {
                     console.log(`Ítem con ID ${item.id} reclamado con éxito.`);
               
                     // Recargar los datos de los ítems desde el backend
-                    const res = await fetch(
-                      `http://localhost:3000/season-pass/season-pass/getItemsFromLevels/${getUserIdFromAccessToken()}`
+                    const res = await fetchWithToken(
+                      `http://galaxy.t2dc.es:3000/season-pass/season-pass/getItemsFromLevels/${getUserIdFromAccessToken()}`
                     );
               
                     if (!res.ok) {
@@ -299,12 +312,9 @@ function BattlePass() {
                   try {
                     const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario logueado
                     // Realiza el fetch para reclamar el ítem
-                    const response = await fetch("http://localhost:3000/items/assign-item", {
+                    const response = await fetchWithToken("http://galaxy.t2dc.es:3000/items/assign-item", {
                       method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({ itemId: currentItem.id, userId: userId }), // Asegúrate de enviar el ID correcto
+                      body: JSON.stringify({ itemId: currentItem.id, userId: userId }) // Asegúrate de enviar el ID correcto
                     });
               
                     if (!response.ok) {
@@ -314,8 +324,8 @@ function BattlePass() {
                     console.log(`Ítem con ID ${currentItem.id} reclamado con éxito.`);
               
                     // Recargar los datos de los ítems desde el backend
-                    const res = await fetch(
-                      `http://localhost:3000/season-pass/season-pass/getItemsFromSeasonPass/${getUserIdFromAccessToken()}/1`
+                    const res = await fetchWithToken(
+                      `http://galaxy.t2dc.es:3000/season-pass/season-pass/getItemsFromSeasonPass/${getUserIdFromAccessToken()}/1`
                     );
               
                     if (!res.ok) {

@@ -1,29 +1,7 @@
 import { useEffect, useState } from "react";
+import { getUserIdFromAccessToken } from "../utils/auth"; // Asegúrate de que esta función esté definida en utils/auth.js
+import { fetchWithToken } from "../utils/fetchWithToken";
 
-const decodeJWT = (token) => {
-  try {
-    if (!token) return null;
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
-    return payload;
-  } catch (error) {
-    console.error("Error decodificando el JWT:", error);
-    return null;
-  }
-};
-
-const getUserIdFromAccessToken = () => {
-  const cookies = document.cookie.split("; ");
-  for (let cookie of cookies) {
-    const [key, value] = cookie.split("=");
-    if (key === "accessToken") {
-      const payload = decodeJWT(value);
-      return payload?.id || null;
-    }
-  }
-  return null;
-};
 
 const setCookie = (name, value, days) => {
   const expires = new Date();
@@ -42,7 +20,7 @@ export default function ImageSelector() {
       if (!userId) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/items/get-all-items/${userId}`);
+        const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/items/get-all-items/${userId}`);
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status}`);
         }

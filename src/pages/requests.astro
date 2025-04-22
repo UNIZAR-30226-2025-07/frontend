@@ -48,6 +48,7 @@ import Navbar from "../components/Navbar.astro";
   <client:only>
     <script>
       import type { UUIDTypes } from "uuid";
+      import { fetchWithToken } from "../utils/fetchWithToken.js";
 
       interface Solicitud {
         User1: {
@@ -67,11 +68,11 @@ import Navbar from "../components/Navbar.astro";
 
       // Función para obtener el nombre de usuario
       const getUserData = async (userId: string) => {
-        const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+        const url = `http://galaxy.t2dc.es:3000/main-screen/get-user/${userId}`;
         console.log(`📡 Realizando petición a: ${url}`);
 
         try {
-          const response = await fetch(url);
+          const response = await fetchWithToken(url);
           console.log(`📥 Respuesta recibida. Código de estado: ${response.status}`);
 
           if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -117,11 +118,8 @@ import Navbar from "../components/Navbar.astro";
           console.log("friendID:", friendID);
 
           // Hacemos la solicitud HTTP al backend usando `fetch`
-          const response = await fetch(`http://localhost:3000/friends/deny_solicitud/${userID}`, {
+          const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/friends/deny_solicitud/${userID}`, {
             method: "POST", // Usamos el método POST para enviar la solicitud
-            headers: {
-              "Content-Type": "application/json", // Indicamos que estamos enviando JSON
-            },
             body: JSON.stringify({ id: friendID }), // Enviamos el ID del amigo
           });
 
@@ -154,11 +152,8 @@ import Navbar from "../components/Navbar.astro";
           console.log("friendID:", friendID);
 
           // Hacemos la solicitud HTTP al backend usando `fetch`
-          const response = await fetch(`http://localhost:3000/friends/add_friend/${userID}`, {
+          const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/friends/add_friend/${userID}`, {
             method: "POST", // Usamos el método POST para enviar la solicitud
-            headers: {
-              "Content-Type": "application/json", // Indicamos que estamos enviando JSON
-            },
             body: JSON.stringify({ id: friendID }), // Enviamos el ID del amigo
           });
 
@@ -225,7 +220,7 @@ import Navbar from "../components/Navbar.astro";
             await getUserData(userId);
 
 
-            const response = await fetch(`http://localhost:3000/friends/get_solicitudes/${userId}`);
+            const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/friends/get_solicitudes/${userId}`);
             const data = await response.json();
             solicitudesData = data;
             console.log("Solicitudes de amistad:", solicitudesData);

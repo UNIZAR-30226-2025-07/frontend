@@ -31,6 +31,7 @@ import Navbar from "../components/Navbar.astro";
   <!-- LISTA DE LOGROS -->
   <client:only>
     <script type="module">
+      import { fetchWithToken } from "../utils/fetchWithToken.js";
       const decodeJWT = (token) => {
         try {
           if (!token) return null;
@@ -62,11 +63,8 @@ import Navbar from "../components/Navbar.astro";
           console.log("userID:", userID);
 
           // Hacemos la solicitud HTTP al backend usando `fetch`
-          const response = await fetch(`http://localhost:3000/achievements/unlock-achievement`, {
+          const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/achievements/unlock-achievement`, {
             method: "POST", // Usamos el método POST para enviar la solicitud
-            headers: {
-              "Content-Type": "application/json", // Indicamos que estamos enviando JSON
-            },
             body: JSON.stringify({ user_id: userID, achievement_id: logroID }), // Enviamos el ID del amigo
           });
 
@@ -100,7 +98,7 @@ import Navbar from "../components/Navbar.astro";
             return;
           }
     
-          const response = await fetch(`http://localhost:3000/achievements/achievements/${userId}`);
+          const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/achievements/achievements/${userId}`);
           const data = await response.json();
           const logros = data.achievements || [];
     

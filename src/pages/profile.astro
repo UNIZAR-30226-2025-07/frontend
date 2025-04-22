@@ -70,7 +70,9 @@ import Navbar from "../components/Navbar.astro";
   </div>
 </div>
 
-<script is:inline>
+<script type="module" is:inline>
+  import { fetchWithToken } from "../utils/fetchWithToken.js";
+
   // Función para mostrar notificación
   function showNotification(message, type) {
     const notification = document.getElementById("notification");
@@ -130,7 +132,7 @@ import Navbar from "../components/Navbar.astro";
   const getUserData = async (userId) => {
     try {
       console.log("Id del token: ", userId);
-      const response = await fetch(`http://localhost:3000/main-screen/get-user/${userId}`);
+      const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/main-screen/get-user/${userId}`);
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       
       const data = await response.json();
@@ -221,7 +223,7 @@ import Navbar from "../components/Navbar.astro";
         return;
       }
 
-      if (!validatePassword(passwordInput.value)) {
+      if (!validatePassword(passwordInput.value) && passwordInput.value) {
         showNotification('La contraseña debe tener al menos 7 caracteres, una mayúscula, un número y un símbolo', 'error');
         setTimeout(() => {
 
@@ -242,11 +244,8 @@ import Navbar from "../components/Navbar.astro";
       };
 
       // Hacemos la solicitud al backend para actualizar los datos
-      const response = await fetch(`http://localhost:3000/main-screen/update-user/${userId}`, {
+      const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/main-screen/update-user/${userId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(data)
       });
 
@@ -333,11 +332,8 @@ import Navbar from "../components/Navbar.astro";
       const hashedPassword = await hashPassword(password);
 
       // Verificar la contraseña del usuario con el backend
-      const response = await fetch(`http://localhost:3000/main-screen/verify-password/${userId}`, {
+      const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/main-screen/verify-password/${userId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({ password: hashedPassword })
       });
 
