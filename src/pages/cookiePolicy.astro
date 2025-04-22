@@ -1,0 +1,313 @@
+---
+// src/pages/cookie-policy.astro
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Cookie Policy | Mi Juego Agar.io">
+  <div class="policy-container">
+    <div class="policy-header">
+      <h1>Cookie Policy</h1>
+      <div class="last-updated">Última actualización: 21 de abril, 2025</div>
+    </div>
+
+    <div class="policy-content">
+      <section>
+        <h2>🍪 Introducción</h2>
+        <p>
+          Bienvenido a nuestro juego. Esta Política de Cookies explica cómo usamos cookies y tecnologías 
+          similares de seguimiento en nuestro sitio web y en nuestra aplicación de juego. Al usar nuestros 
+          servicios, aceptas nuestro uso de cookies de acuerdo con esta política.
+        </p>
+      </section>
+
+      <section>
+        <h2>📌 ¿Qué son las Cookies?</h2>
+        <p>
+          Las cookies son pequeños archivos de texto que se colocan en tu dispositivo cuando visitas 
+          nuestro sitio web o usas nuestra aplicación. Son ampliamente utilizadas para hacer que los 
+          sitios web y las aplicaciones funcionen de manera más eficiente y para proporcionar información 
+          a los propietarios.
+        </p>
+      </section>
+
+      <section>
+        <h2>⚙️ Cómo usamos las Cookies</h2>
+        <div class="card-grid">
+          <div class="cookie-card">
+            <div class="cookie-icon">🔐</div>
+            <h3>Cookies Esenciales</h3>
+            <p>Permiten funcionalidades básicas como seguridad, gestión de red y acceso a la cuenta.</p>
+          </div>
+          <div class="cookie-card">
+            <div class="cookie-icon">📊</div>
+            <h3>Cookies de Rendimiento</h3>
+            <p>Recopilan información sobre cómo los visitantes utilizan nuestro sitio web/aplicación.</p>
+          </div>
+          <div class="cookie-card">
+            <div class="cookie-icon">🎛️</div>
+            <h3>Cookies de Funcionalidad</h3>
+            <p>Recuerdan tus preferencias y configuraciones para personalizar tu experiencia.</p>
+          </div>
+          <div class="cookie-card">
+            <div class="cookie-icon">🎯</div>
+            <h3>Cookies de Publicidad</h3>
+            <p>Entregan contenido relevante a tus intereses y miden la efectividad de las campañas.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>🕒 Tipos de Cookies que usamos</h2>
+        <div class="cookie-types">
+          <div class="cookie-type">
+            <h3>Cookies de Sesión</h3>
+            <p>Estas cookies temporales permanecen en tu navegador o dispositivo hasta que abandonas el sitio, después son eliminadas.</p>
+          </div>
+          <div class="cookie-type">
+            <h3>Cookies Persistentes</h3>
+            <p>Estas permanecen en tu dispositivo después de cerrar el navegador y pueden ser utilizadas por tu navegador en visitas posteriores a nuestro sitio.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>👥 Cookies de Terceros</h2>
+        <p>
+          Algunas cookies son colocadas por terceros en nuestro nombre. Estos terceros pueden incluir:
+        </p>
+        <ul class="third-party-list">
+          <li>Proveedores de análisis (como Google Analytics)</li>
+          <li>Redes publicitarias</li>
+          <li>Plataformas de redes sociales</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>🛠️ Gestión de Cookies</h2>
+        <p>
+          La mayoría de navegadores web permiten controlar las cookies a través de sus ajustes. Típicamente puedes:
+        </p>
+        <ul>
+          <li>Ver qué cookies están almacenadas en tu dispositivo</li>
+          <li>Permitir, bloquear o eliminar cookies</li>
+          <li>Establecer preferencias para ciertos sitios web</li>
+        </ul>
+        <p>
+          Para gestionar las cookies, consulta la documentación de ayuda de tu navegador, ya que cada navegador gestiona las cookies de manera diferente.
+        </p>
+      </section>
+
+      <section>
+        <h2>📝 Cambios en esta Política</h2>
+        <p>
+          Podemos actualizar esta Política de Cookies de vez en cuando. Te notificaremos de cualquier cambio publicando la nueva política en esta página y actualizando la fecha de "Última actualización".
+        </p>
+      </section>
+
+      <section>
+        <h2>📞 Contáctanos</h2>
+        <p>
+          Si tienes alguna pregunta sobre nuestra Política de Cookies, por favor contáctanos:
+        </p>
+        <div class="contact-info">
+          <div>📧 Email: <a href="mailto:galaxy.io.recovery@gmail.com">galaxy.io.recovery@gmail.com</a></div>
+          <div>📝 Formulario: <a href="/contactSupportForm">Formulario de Contacto</a></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="back-button">
+      <a href="/">← Volver al juego</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .policy-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .policy-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    padding-bottom: 1.5rem;
+  }
+
+  .policy-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #7f5af0, transparent);
+  }
+
+  h1 {
+    font-size: 3rem;
+    background: linear-gradient(90deg, #7f5af0, #2cb67d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+
+  .last-updated {
+    font-size: 1rem;
+    color: #94a1b2;
+  }
+
+  .policy-content {
+    background: rgba(29, 31, 42, 0.7);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  section {
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    color: #7f5af0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(127, 90, 240, 0.3);
+    padding-bottom: 0.5rem;
+  }
+
+  p {
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .cookie-card {
+    background: rgba(51, 53, 68, 0.8);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(127, 90, 240, 0.2);
+  }
+
+  .cookie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(127, 90, 240, 0.3);
+  }
+
+  .cookie-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .cookie-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #fffffe;
+  }
+
+  .cookie-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .cookie-type {
+    background: rgba(51, 53, 68, 0.8);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(127, 90, 240, 0.2);
+  }
+
+  .cookie-type h3 {
+    color: #2cb67d;
+    margin-bottom: 0.8rem;
+  }
+
+  ul {
+    list-style-position: inside;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  .third-party-list li {
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .third-party-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #7f5af0;
+  }
+
+  .contact-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .contact-info div {
+    padding: 0.8rem;
+    background: rgba(127, 90, 240, 0.1);
+    border-radius: 8px;
+  }
+
+  a {
+    color: #7f5af0;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  a:hover {
+    color: #2cb67d;
+    text-decoration: underline;
+  }
+
+  .back-button {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  .back-button a {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: rgba(127, 90, 240, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(127, 90, 240, 0.4);
+  }
+
+  .back-button a:hover {
+    background: rgba(127, 90, 240, 0.4);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .cookie-types,
+    .contact-info {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
