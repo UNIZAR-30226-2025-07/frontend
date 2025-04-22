@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getUserIdFromAccessToken } from '/src/utils/auth.js';
+import { fetchWithToken } from '../utils/fetchWithToken';
 
 export default function ProgressBarCard() {
   const [userLevel, setUserLevel] = useState(1); // Nivel actual del usuario
@@ -10,8 +11,11 @@ export default function ProgressBarCard() {
     const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario desde el token
     if (userId) {
       // Obtener el nivel del usuario
-      fetch(`http://localhost:3000/season-pass/season-pass/getUserLevel/${userId}`)
-        .then((res) => res.json())
+      fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getUserLevel/${userId}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+          return res.json();
+        })
         .then((data) => {
           if (data && data.level) {
             setUserLevel(data.level); // Actualiza el nivel del usuario
@@ -20,8 +24,11 @@ export default function ProgressBarCard() {
         .catch((err) => console.error("Error al obtener el nivel del usuario:", err));
 
       // Obtener la experiencia actual del usuario
-      fetch(`http://localhost:3000/season-pass/season-pass/getUserExperience/${userId}`)
-        .then((res) => res.json())
+      fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getUserExperience/${userId}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+          return res.json();
+        })
         .then((data) => {
           if (data && data.experience !== undefined && data.experience !== null) {
             setUserExperience(data.experience); // Actualiza la experiencia actual del usuario
@@ -34,8 +41,11 @@ export default function ProgressBarCard() {
   useEffect(() => {
     // Obtener la experiencia necesaria para subir de nivel
     if (userLevel > 0) {
-      fetch(`http://localhost:3000/season-pass/season-pass/getExperienceToNextLevel/${userLevel}`)
-        .then((res) => res.json())
+      fetchWithToken(`http://galaxy.t2dc.es:3000/season-pass/season-pass/getExperienceToNextLevel/${userLevel}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+          return res.json();
+        })
         .then((data) => {
           if (data && data.experience) {
             setExperienceToNextLevel(data.experience); // Actualiza la experiencia necesaria para el siguiente nivel

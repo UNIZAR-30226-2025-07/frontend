@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "../../styles/chat.css";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -15,10 +16,10 @@ export default function Chat() {
 
   // Función para obtener el username del amigo
   const getFriendUsername = async (userId) => {
-    const url = `http://localhost:3000/main-screen/get-user/${userId}`;
+    const url = `http://galaxy.t2dc.es:3000/main-screen/get-user/${userId}`;
     
     try {
-      const response = await fetch(url);
+      const response = await fetchWithToken(url);
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       
       const data = await response.json();
@@ -35,8 +36,8 @@ export default function Chat() {
     
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:3000/messages/get_messages/${currentUser}/${friendId}`
+      const response = await fetchWithToken(
+        `http://galaxy.t2dc.es:3000/messages/get_messages/${currentUser}/${friendId}`
       );
       
       if (!response.ok) throw new Error("Error al obtener mensajes");
@@ -83,13 +84,14 @@ export default function Chat() {
 
       // Enviar el mensaje a la base de datos
       try {
-        const response = await fetch(`http://localhost:3000/messages/add_message/`, {
+        const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/messages/add_message/`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newMessage),
+          body: JSON.stringify(newMessage)
         });
+        
+        if (!response.ok) {
+          throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+        }
 
         const result = await response.json();
         if (result.message === "Mensaje enviado correctamente.") {

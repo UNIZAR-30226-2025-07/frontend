@@ -37,7 +37,7 @@ const StoreComponent = () => {
         console.log("shopId:", shopId);
         
         // Obtenemos los items de la tienda
-        const response = await fetchWithToken(`http://localhost:3000/shop/getItems/${shopId}`);
+        const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/shop/getItems/${shopId}`);
         if (response.ok) {
           const data = await response.json();
           setItems(data);
@@ -60,7 +60,7 @@ const StoreComponent = () => {
         }
         
         // Obtener las skins adquiridas por el usuario
-        const response = await fetchWithToken(`http://localhost:3000/items/get-all-items/${userId}`);
+        const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/items/get-all-items/${userId}`);
         if (response.ok) {
           const data = await response.json();
           const userItems = data && data.items ? data.items : [];
@@ -83,7 +83,7 @@ const StoreComponent = () => {
         }
         
         // Comprobar si el usuario ya tiene el pase de temporada
-        const response = await fetchWithToken(`http://localhost:3000/shop/hasSP/${userId}`);
+        const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/shop/hasSP/${userId}`);
         if (response.ok) {
           const data = await response.json();
           setHasBattlePass(data.hasSeasonPass || false);
@@ -164,7 +164,7 @@ const StoreComponent = () => {
       const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario logueado
       
       // Realizamos la petición para procesar el pago
-      const paymentResponse = await fetchWithToken("http://localhost:3000/payment/pay", {
+      const paymentResponse = await fetchWithToken("http://galaxy.t2dc.es:3000/payment/pay", {
         method: "POST",
         body: JSON.stringify(paymentData)
       });
@@ -178,7 +178,7 @@ const StoreComponent = () => {
           userId: userId,
         };
         
-        const assignResponse = await fetchWithToken("http://localhost:3000/items/assign-item", {
+        const assignResponse = await fetchWithToken("http://galaxy.t2dc.es:3000/items/assign-item", {
           method: "POST",
           body: JSON.stringify(assignItemData)
         });
@@ -212,7 +212,7 @@ const StoreComponent = () => {
       };
       const userId = getUserIdFromAccessToken();
       
-      const paymentResponse = await fetchWithToken("http://localhost:3000/payment/pay", {
+      const paymentResponse = await fetchWithToken("http://galaxy.t2dc.es:3000/payment/pay", {
         method: "POST",
         body: JSON.stringify(paymentData)
       });
@@ -223,7 +223,7 @@ const StoreComponent = () => {
         // Registrar la compra del pase de temporada en la base de datos
         const assignBattlePassData = { user_id: userId };
         
-        const assignResponse = await fetchWithToken("http://localhost:3000/shop/purchasedSP", {
+        const assignResponse = await fetchWithToken("http://galaxy.t2dc.es:3000/shop/purchasedSP", {
           method: "POST",
           body: JSON.stringify(assignBattlePassData)
         });
