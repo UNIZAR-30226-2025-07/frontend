@@ -58,12 +58,14 @@ import ProgressBar from "../components/ProgressBar.astro";
         }
       };
 
+      let accessToken = "";
       // Función para obtener el ID del usuario desde el accessToken en las cookies
       function getUserIdFromAccessToken() {
         const cookies = document.cookie.split("; ");
         for (let cookie of cookies) {
           const [key, value] = cookie.split("=");
           if (key === "accessToken") {
+            accessToken = value;
             const payload = decodeJWT(value);
             return payload?.id || null;
           }
@@ -72,7 +74,6 @@ import ProgressBar from "../components/ProgressBar.astro";
       };
 
     const userId = getUserIdFromAccessToken();
-    // const accessToken = getCookie("accessToken");
     const isAuthenticated = !!userId;
     const usernameElement = document.getElementById("username");
     const contenido = document.getElementById("usuario-contenido");
@@ -88,7 +89,13 @@ import ProgressBar from "../components/ProgressBar.astro";
       console.log(`📡 Realizando petición a: ${url}`);
 
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Auth": accessToken, // Incluye el token en el encabezado
+          },
+        });
         console.log(`📥 Respuesta recibida. Código de estado: ${response.status}`);
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);

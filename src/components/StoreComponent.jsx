@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getUserIdFromAccessToken } from '/src/utils/auth.js';
 import { showNotification } from "../utils/notification";
+import { fetchWithToken } from "../utils/fetchWithToken"; // Asegúrate de importar la función fetchWithToken
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
@@ -29,38 +30,84 @@ const StoreComponent = () => {
       return shopId;
     };
     
-    const shopId = updateShopId(); // Actualizamos o recuperamos el id de la tienda
-    console.log("shopId:", shopId);
-  
-    fetch(`http://localhost:3000/shop/getItems/${shopId}`)
-      .then((res) => res.json())
-      .then((data) => setItems(data))
-      .catch((err) => console.error("Error al cargar tienda:", err));
-  
-    const userId = getUserIdFromAccessToken(); // Obtener el ID del usuario logueado
-    console.log("userId:", userId);
-  
-    // Obtener las skins adquiridas por el usuario
-    fetch(`http://localhost:3000/items/get-all-items/${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const userItems = data && data.items ? data.items : [];
-        setUserSkins(userItems);
-      })
-      .catch((err) => console.error("Error al obtener skins adquiridas:", err));
-  
-    // Comprobar si el usuario ya tiene el pase de temporada
-    fetch(`http://localhost:3000/shop/hasSP/${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setHasBattlePass(data.hasSeasonPass || false);
-      })
-      .catch((err) => console.error("Error al comprobar el pase de temporada:", err));
-  
+    const loadShopData = async () => {
+      try {
+        // Actualizamos o recuperamos el id de la tienda
+        const shopId = updateShopId();
+        console.log("shopId:", shopId);
+        
+        // Obtenemos los items de la tienda
+        const response = await fetchWithToken(`http://localhost:3000/shop/getItems/${shopId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setItems(data);
+        } else {
+          console.error("Error al cargar tienda:", await response.text());
+        }
+      } catch (err) {
+        console.error("Error al cargar tienda:", err);
+      }
+    };
+    
+    const loadUserItems = async () => {
+      try {
+        const userId = getUserIdFromAccessToken();
+        console.log("userId:", userId);
+        
+        if (!userId) {
+          console.error("No se pudo obtener el ID del usuario");
+          return;
+        }
+        
+        // Obtener las skins adquiridas por el usuario
+        const response = await fetchWithToken(`http://localhost:3000/items/get-all-items/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          const userItems = data && data.items ? data.items : [];
+          setUserSkins(userItems);
+        } else {
+          console.error("Error al obtener skins:", await response.text());
+        }
+      } catch (err) {
+        console.error("Error al obtener skins adquiridas:", err);
+      }
+    };
+    
+    const checkBattlePass = async () => {
+      try {
+        const userId = getUserIdFromAccessToken();
+        
+        if (!userId) {
+          console.error("No se pudo obtener el ID del usuario");
+          return;
+        }
+        
+        // Comprobar si el usuario ya tiene el pase de temporada
+        const response = await fetchWithToken(`http://localhost:3000/shop/hasSP/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasBattlePass(data.hasSeasonPass || false);
+        } else {
+          console.error("Error al comprobar el pase de temporada:", await response.text());
+        }
+      } catch (err) {
+        console.error("Error al comprobar el pase de temporada:", err);
+      }
+    };
+    
     const updateCountdown = () => {
       setCountdown(calculateTimeUntilMidnight());
     };
-  
+
+    // Función para usar en useEffect
+    const loadAllData = async () => {
+      await loadShopData();
+      await loadUserItems();
+      await checkBattlePass();
+    };
+    
+    loadAllData(); // Cargar datos al inicio
+    
     updateCountdown(); // Calcular inicialmente
   
     const interval = setInterval(() => {
@@ -106,103 +153,97 @@ const StoreComponent = () => {
     setShowModal(false); // Cierra el modal sin hacer nada
   };
 
-  const handlePay = () => {
-    // Parámetros de la petición de pago
-    const paymentData = {
-      amount: selectedItem.item_price * 100,
-      currency: "EUR", // Puedes cambiarlo a la moneda que necesites
-      paymentMethodId: "pm_card_visa", // Aquí deberías tomar el ID del método de pago seleccionado
-    };
-    const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario logueado    
-
-    // Realizamos la petición para procesar el pago
-    fetch("http://localhost:3000/payment/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(paymentData),
-    })
-      .then((response) => response.json())
-      .then(async (data) => {
-        if (data.success) {
-          // Si el pago se realiza con éxito, realizamos la segunda petición para asignar el item
-          const assignItemData = {
-            itemId: selectedItem.id_item, // Asegúrate de tener el id del item en selectedItem
-            userId: userId, // Aquí deberías obtener el ID del usuario logueado
-          };
-
-          const response = await fetch("http://localhost:3000/items/assign-item", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(assignItemData),
-          });
-          
-          if (!response.ok) throw new Error('Error asignar el item');
-
-          const result = await response.json();
-          
-          // Actualizar el estado local para reflejar la compra sin necesidad de recargar
-          setUserSkins([...userSkins, { id: selectedItem.id_item }]);
-          
-          showNotification("Pago realizado correctamente.", "success");
-          setShowModal(false);
-        } else {
-          showNotification("El pago no fue procesado con éxito. Intenta nuevamente.", "error");
-        }
-      })
-      .catch((error) => {
-        console.error("Error al procesar el pago:", error);
-        showNotification("Hubo un error al procesar el pago.", "error");
+  const handlePay = async () => {
+    try {
+      // Parámetros de la petición de pago
+      const paymentData = {
+        amount: selectedItem.item_price * 100,
+        currency: "EUR", // Puedes cambiarlo a la moneda que necesites
+        paymentMethodId: "pm_card_visa", // Aquí deberías tomar el ID del método de pago seleccionado
+      };
+      const userId = getUserIdFromAccessToken(); // Obtiene el ID del usuario logueado
+      
+      // Realizamos la petición para procesar el pago
+      const paymentResponse = await fetchWithToken("http://localhost:3000/payment/pay", {
+        method: "POST",
+        body: JSON.stringify(paymentData)
       });
+      
+      const data = await paymentResponse.json();
+      
+      if (data.success) {
+        // Si el pago se realiza con éxito, realizamos la segunda petición para asignar el item
+        const assignItemData = {
+          itemId: selectedItem.id_item,
+          userId: userId,
+        };
+        
+        const assignResponse = await fetchWithToken("http://localhost:3000/items/assign-item", {
+          method: "POST",
+          body: JSON.stringify(assignItemData)
+        });
+        
+        if (!assignResponse.ok) {
+          throw new Error('Error al asignar el item');
+        }
+        
+        const result = await assignResponse.json();
+        
+        // Actualizar el estado local para reflejar la compra sin necesidad de recargar
+        setUserSkins([...userSkins, { id: selectedItem.id_item }]);
+        
+        showNotification("Pago realizado correctamente.", "success");
+        setShowModal(false);
+      } else {
+        showNotification("El pago no fue procesado con éxito. Intenta nuevamente.", "error");
+      }
+    } catch (error) {
+      console.error("Error al procesar el pago:", error);
+      showNotification("Hubo un error al procesar el pago.", "error");
+    }
   };
-
-  const handlePaySP = () => {
-    const paymentData = {
-      amount: 20 * 100,
-      currency: "EUR",
-      paymentMethodId: "pm_card_visa",
-    };
-    const userId = getUserIdFromAccessToken();
-
-    fetch("http://localhost:3000/payment/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(paymentData),
-    })
-      .then((response) => response.json())
-      .then(async (data) => {
-        if (data.success) {
-          // Registrar la compra del pase de temporada en la base de datos
-          const assignBattlePassData = { user_id: userId };
-
-          const response = await fetch("http://localhost:3000/shop/purchasedSP", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(assignBattlePassData),
-          });
-
-          if (!response.ok) throw new Error("Error al asignar el pase de temporada");
-
-          const result = await response.json();
-
-          setHasBattlePass(true); // Actualizar el estado local
-          showNotification("Pase de temporada adquirido correctamente.", "success");
-          setShowModal(false);
-        } else {
-          showNotification("El pago no fue procesado con éxito. Intenta nuevamente.", "error");
-        }
-      })
-      .catch((error) => {
-        console.error("Error al procesar el pago:", error);
-        showNotification("Hubo un error al procesar el pago.", "error");
+  
+  const handlePaySP = async () => {
+    try {
+      const paymentData = {
+        amount: 20 * 100,
+        currency: "EUR",
+        paymentMethodId: "pm_card_visa",
+      };
+      const userId = getUserIdFromAccessToken();
+      
+      const paymentResponse = await fetchWithToken("http://localhost:3000/payment/pay", {
+        method: "POST",
+        body: JSON.stringify(paymentData)
       });
+      
+      const data = await paymentResponse.json();
+      
+      if (data.success) {
+        // Registrar la compra del pase de temporada en la base de datos
+        const assignBattlePassData = { user_id: userId };
+        
+        const assignResponse = await fetchWithToken("http://localhost:3000/shop/purchasedSP", {
+          method: "POST",
+          body: JSON.stringify(assignBattlePassData)
+        });
+        
+        if (!assignResponse.ok) {
+          throw new Error("Error al asignar el pase de temporada");
+        }
+        
+        const result = await assignResponse.json();
+        
+        setHasBattlePass(true); // Actualizar el estado local
+        showNotification("Pase de temporada adquirido correctamente.", "success");
+        setShowModal(false);
+      } else {
+        showNotification("El pago no fue procesado con éxito. Intenta nuevamente.", "error");
+      }
+    } catch (error) {
+      console.error("Error al procesar el pago:", error);
+      showNotification("Hubo un error al procesar el pago.", "error");
+    }
   };
 
   const styles = {
