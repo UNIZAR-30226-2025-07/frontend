@@ -115,7 +115,11 @@
                       console.log("✅ Autenticación exitosa. Token  e id recibidos:", data.accesstoken);
                       document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax;`;
                       document.cookie = `refreshToken=${data.refreshToken}; path=/; SameSite=Lax;`
-                      window.location.href = "/";
+                      if (email === "admin@galaxyio.es") {
+                        window.location.href = "/admin";
+                      } else {
+                        window.location.href = "/";
+                      }
                   } else {
                       console.warn("⚠️ Error en la autenticación:", data.message);
                       errorMessage.textContent = data.message || "Error al iniciar sesión"; //Todo esto es depuración
@@ -134,7 +138,7 @@
 <body>
   <div class="grid-container">
       <div class="form-container">
-          <img src="../../../public/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
+          <img src="/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
           <h1 class="title">Iniciar Sesión</h1>
           <form class="form" action="/login" method="POST">
               <div class="input-group">
@@ -296,7 +300,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background: url('../../../public/images/fondos/loginfondo.gif') no-repeat center center fixed;
+    background: url('/images/fondos/loginfondo.gif') no-repeat center center fixed;
     background-size: cover;
 }
 .grid-container {

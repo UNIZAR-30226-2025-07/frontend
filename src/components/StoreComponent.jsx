@@ -473,7 +473,7 @@ const StoreComponent = () => {
               opacity: 1, // Aseguramos que la opacidad de "Nueva tienda en" no cambie
             }}
         >
-          Nueva tienda en: {formatCountdown(countdown)}
+          Nuevos productos en: {formatCountdown(countdown)}
         </div>
 
         <div style={{
