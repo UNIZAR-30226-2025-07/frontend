@@ -1,8 +1,19 @@
 ---
+export const prerender = false;
 // Importar cualquier componente necesario
 import Logo from "../components/Logo.astro";
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
+
+import { getUserIdFromAccessToken } from "../utils/auth";
+
+export const onRequest = (context: any, next: any) => {
+  const isAuthenticated = getUserIdFromAccessToken();
+  if (!isAuthenticated) {
+    return context.redirect('/login');
+  }
+  return next();
+};
 ---
 
 <head>
@@ -162,6 +173,8 @@ import Navbar from "../components/Navbar.astro";
     // Borramos las cookies correspondientes a los tokens y el ID
     deleteCookie('accessToken');
     deleteCookie('refreshToken');
+    deleteCookie('skin');
+    deleteCookie('username');
 
     // Redirigimos a la página de login
     window.location.href = '/'; // Cambia a la ruta que corresponda

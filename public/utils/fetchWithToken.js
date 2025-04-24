@@ -9,7 +9,7 @@ async function refreshAccessToken() {
         return null;
         }
         
-        const response = await fetch("http://localhost:3000/auth/refresh-token", {
+        const response = await fetch("http://galaxy.t2dc.es:3000/auth/refresh-token", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 ---
 
 <!DOCTYPE html>
@@ -117,6 +118,8 @@
                       document.cookie = `refreshToken=${data.refreshToken}; path=/; SameSite=Lax;`
                       if (email === "admin@galaxyio.es") {
                         window.location.href = "/admin";
+                        // Crear una cookie especial para el admin
+                        document.cookie = `admin=678ugJHGJH86687678GJHGhjghADMIN; path=/; SameSite=Lax;`;
                       } else {
                         window.location.href = "/";
                       }
