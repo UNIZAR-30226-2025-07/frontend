@@ -49,7 +49,7 @@
     }
 
     async function validatePassword(password: string) : Promise<boolean> {
-      const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{7,}$/;
+      const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&,.-_]{7,}$/;
       return regex.test(password);
     };
 
@@ -124,13 +124,7 @@
         console.log("🔐 Contraseña hasheada:", hashedPassword); // Depuración
 
         if (password !== confirmPassword) {
-          console.warn("⚠️ Las contraseñas no coinciden.");
-          errorMessage.textContent = "Las contraseñas no coinciden.";
-          errorMessage.style.display = "block";
-          return;
-        }
-        if (password !== confirmPassword) {
-          console.warn("⚠️ Las contraseñas no coinciden.");
+          console.error("⚠️ Las contraseñas no coinciden.");
           errorMessage.textContent = "Las contraseñas no coinciden.";
           errorMessage.style.display = "block";
           return;
@@ -171,7 +165,7 @@
 <body>
   <div class="grid-container">
     <div class="form-container">
-      <img src="../../../public/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
+      <img src="/images/logo_galaxy.png" alt="Logo de la aplicación" class="logo">
       <h1 class="title">Crear Cuenta</h1>
       <form class="form" action="/newCuenta" method="POST">
         <div class="input-group">
@@ -337,7 +331,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background: url('../../../public/images/fondos/loginfondo.gif') no-repeat center center fixed;
+    background: url('/images/fondos/loginfondo.gif') no-repeat center center fixed;
     background-size: cover;
 }
 .grid-container {
