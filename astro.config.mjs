@@ -8,5 +8,10 @@ export default defineConfig({
     enabled: false, // Disable the dev toolbar in development mode
   },
   trailingSlash: 'ignore',
+  vite: {
+    server: {
+      allowedHosts: ['galaxy.t2dc.es'],
+    },
+  },
 });
 
