@@ -1,5 +1,23 @@
 ---
+export const prerender = false;
+
 import App from "../components/Admin.jsx";
+
+import { getUserIdFromAccessToken } from "../utils/auth";
+
+export const onRequest = (context: any, next: any) => {
+  const isAuthenticated = getUserIdFromAccessToken();
+  const cookies = context.request.headers.get('cookie') || '';
+  const isAdmin = cookies
+    .split(';')
+    .map((cookie: string) => cookie.trim()) // Especificar que 'cookie' es de tipo string
+    .find((cookie: string) => cookie.startsWith('admin='))
+    ?.split('=')[1] === '678ugJHGJH86687678GJHGhjghADMIN';
+  if (!isAuthenticated || !isAdmin) {
+    return context.redirect('/login');
+  }
+  return next();
+};
 ---
 
 <head>

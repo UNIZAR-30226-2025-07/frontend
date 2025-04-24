@@ -1,8 +1,21 @@
 ---
+export const prerender = false;
+
 import StoreComponent from "../components/StoreComponent.jsx";
 import Logo from "../components/Logo.astro";
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
+
+import { getUserIdFromAccessToken } from "../utils/auth.js";
+
+export const onRequest = (context: any, next: any) => {
+  const isAuthenticated = getUserIdFromAccessToken();
+  console.log('User ID from access token:', isAuthenticated); // Debugging line
+  if (!isAuthenticated) {
+    return context.redirect('/login');
+  }
+  return next();
+};
 ---
 
 <head>

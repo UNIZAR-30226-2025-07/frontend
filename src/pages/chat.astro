@@ -1,8 +1,20 @@
 ---
+export const prerender = false;
+
 import ChatComponent from "../components/chat/Chat.jsx";
 import Logo from "../components/Logo.astro";
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
+
+import { getUserIdFromAccessToken } from "../utils/auth";
+
+export const onRequest = (context: any, next: any) => {
+  const isAuthenticated = getUserIdFromAccessToken();
+  if (!isAuthenticated) {
+    return context.redirect('/login');
+  }
+  return next();
+};
 ---
 
 <head>

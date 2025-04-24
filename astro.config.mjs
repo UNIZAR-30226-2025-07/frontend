@@ -7,5 +7,6 @@ export default defineConfig({
   devToolbar: {
     enabled: false, // Disable the dev toolbar in development mode
   },
+  trailingSlash: 'ignore',
 });
 
