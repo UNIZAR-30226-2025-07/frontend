@@ -68,7 +68,7 @@ export const onRequest = (context: any, next: any) => {
         <span>Partida Privada</span>
       </button>
       <div class="dropdown-menu" id="dropdown-menu">
-        <button class="dropdown-item" onclick="window.location.href='/createPG'">Crear Partida</button>
+        <button class="dropdown-item" id="createPG">Crear Partida</button>
         <button class="dropdown-item" onclick="window.location.href='/joinPG'">Unirse a Partida</button>
       </div>
     </div>
@@ -91,8 +91,113 @@ export const onRequest = (context: any, next: any) => {
   <client:only>
     <script>
       import type { UUIDTypes } from "uuid";
-      import { fetchWithToken } from "../utils/fetchWithToken.js"; 
+      import { fetchWithToken } from "../utils/fetchWithToken.js";
 
+      document.addEventListener("DOMContentLoaded", function () {
+        const createGameButton = document.getElementById("createPG");
+
+        if (createGameButton) {
+          createGameButton.addEventListener("click", async function (event) {
+            event.preventDefault(); // Prevenir la redirección inmediata
+
+            try {
+              const userId = getUserIdFromAccessToken(); // Obtener el ID del usuario desde el token
+              if (!userId) {
+                console.error("No se pudo obtener el ID del usuario.");
+                return;
+              }
+
+              // Generar valores aleatorios para `passwd` y `name`
+              const passwd = Math.random().toString(36).substring(2, 10); // Contraseña aleatoria
+              const name = `Partida-${Math.random().toString(36).substring(2, 6)}`; // Nombre aleatorio
+
+              // Guardar `name` y `passwd` en las cookies
+              document.cookie = `gamePasswd=${passwd}; path=/; SameSite=Lax;`;
+
+              // Parámetros para la solicitud
+              const body = {
+                passwd,
+                maxPlayers: 8,
+                name,
+                idLeader: userId,
+              };
+
+              console.log("📡 Enviando datos para crear partida:", body);
+
+              // Creamos la partida privada
+              // Realizar la solicitud al backend
+              const response = await fetchWithToken("http://galaxy.t2dc.es:3000/private/create", {
+                method: "POST",
+                body: JSON.stringify(body),
+              });
+
+              if (!response.ok) {
+                const errorText = await response.text();
+                console.error("❌ Error al crear la partida:", errorText);
+                alert("Hubo un error al crear la partida. Intenta nuevamente.");
+                return;
+              }
+
+              const data = await response.json();
+              console.log("✅ Partida creada exitosamente:", data);
+              document.cookie = `gameId=${data.id}; path=/; SameSite=Lax;`;
+
+              const bodyB = {
+                gameId: data.id,
+                passwd,
+                idUser: userId,
+              };
+
+              // Unirse a la partida privada
+              const responseB = await fetchWithToken("http://galaxy.t2dc.es:3000/private/join", {
+                method: "POST",
+                body: JSON.stringify(bodyB),
+              });
+
+              if (!responseB.ok) {
+                const errorText = await responseB.text();
+                console.error("❌ Error al unirse a la partida:", errorText);
+                alert("Hubo un error al unirse a la partida. Intenta nuevamente.");
+                return;
+              }
+
+              const dataB = await responseB.json();
+              console.log("✅ Se ha unido exitosamente:", dataB);
+
+              // Ponemos en listo al lider de la lobby
+              /*
+              const bodyC = {
+                gameId: data.id,
+                userId: userId,
+              };
+
+              // Unirse a la partida privada
+              const responseC = await fetchWithToken("http://localhost:3000/private/ready", {
+                method: "POST",
+                body: JSON.stringify(bodyC),
+              });
+
+              if (!responseC.ok) {
+                const errorText = await responseC.text();
+                console.error("❌ Error al ponerse en listo:", errorText);
+                alert("Hubo un error al ponerse en listo. Intenta nuevamente.");
+                return;
+              }
+
+              const dataC = await responseC.json();
+              console.log("✅ Se ha puesto al lider en Listo correctamente:", dataC);
+              */
+              // Redirigir al usuario a la página de creación de partida
+              window.location.href = "/createPG";
+            } catch (error) {
+              console.error("❌ Error al procesar la creación de la partida:", error);
+              alert("Hubo un problema al crear la partida. Intenta nuevamente.");
+            }
+          });
+        }
+      });
+
+      
       interface Friend {
         User1: {
           username: string;
@@ -719,6 +824,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return null;
   };
 
+  
   // Función para mostrar notificación
   function showNotification(message : string, type : string) {
     const notification = document.getElementById("notification");

@@ -38,6 +38,7 @@ function Header() {
     // Borramos las cookies correspondientes a los tokens y el ID
     deleteCookie('accessToken');
     deleteCookie('refreshToken');
+    delete('admin');
 
     // Redirigimos a la página de login
     window.location.href = '/'; // Cambia a la ruta que corresponda
