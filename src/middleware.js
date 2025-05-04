@@ -1,3 +1,5 @@
+import { checkPrivate } from "./utils/checkPrivate";
+
 function getCookie(name, cookies = '') {
     // Si no se pasan cookies, intenta usar document.cookie (solo en el cliente)
     if (!cookies && typeof document !== 'undefined') {
@@ -12,7 +14,7 @@ function getCookie(name, cookies = '') {
       ?.split('=')[1] || null;
   }
 
-export function onRequest(context, next) {
+export async function onRequest(context, next) {
     console.log('Middleware ejecutado para:', context.request.url);
     // Obtener la URL actual
     const url = new URL(context.request.url);
@@ -34,6 +36,7 @@ export function onRequest(context, next) {
     // Verificar si la ruta actual está protegida
     if (rutasProtegidas.includes(rutaProtegida)) {
         // Comprobar si el usuario tiene autorización (por ejemplo, un token en las cookies)
+        //await checkPrivate(); // Llamar a la función checkPrivate para comprobar si hay que eliminar una partida privada o a un jugador de una partida privada
         if (!tokenAutenticacion) {
         // Redirigir al inicio o página de login
         return context.redirect('/login');
