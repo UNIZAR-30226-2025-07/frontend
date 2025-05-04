@@ -45,6 +45,10 @@ import SeasonPassButton from "../components/SeasonPassButton.jsx";
 
 <script>
   import { getCookie } from "../utils/cookies";
+  import { checkPrivate } from "../utils/checkPrivate";
+
+  await checkPrivate(); // Verifica si el usuario está autenticado antes de cargar el contenido
+  
 
   document.cookie = `skin=Aspecto Básico.png; path=/; SameSite=Lax;`
 

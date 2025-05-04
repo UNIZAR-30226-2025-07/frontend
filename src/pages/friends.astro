@@ -90,8 +90,15 @@ export const onRequest = (context: any, next: any) => {
   <!-- Componente React -->
   <client:only>
     <script>
+
       import type { UUIDTypes } from "uuid";
       import { fetchWithToken } from "../utils/fetchWithToken.js";
+
+      import { checkPrivate } from "../utils/checkPrivate";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        checkPrivate();
+      });
 
       document.addEventListener("DOMContentLoaded", function () {
         const createGameButton = document.getElementById("createPG");

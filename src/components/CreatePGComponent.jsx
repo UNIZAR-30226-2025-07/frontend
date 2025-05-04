@@ -7,6 +7,7 @@ import { getUserIdFromAccessToken } from '../utils/auth';
 
 
 
+
 export default function GameLobby() {
   const [gameCode, setGameCode] = useState('');
   const [players, setPlayers] = useState([]);
@@ -101,11 +102,12 @@ export default function GameLobby() {
   // Borrar la partida privada si el lider sale de la lobby o borrar al jugador si sale de la lobby y no es el lider
 
   useEffect(() => {
-    const deletePrivateGame = async () => {
+    const deletePrivateGame = async() => {
       try {
         const cookies = document.cookie.split('; ');
         let gameId = null;
         let gamePasswd = null;
+        let salidaControlada = null;
   
         for (let cookie of cookies) {
           const [key, value] = cookie.split('=');
@@ -113,7 +115,9 @@ export default function GameLobby() {
           if (key === 'gamePasswd') gamePasswd = value;
           if (key === 'salidaControlada') salidaControlada = value;
         }
-
+  
+        console.log('🍪 Cookies encontradas:', { gameId, gamePasswd, salidaControlada });
+  
         if (salidaControlada === "true") {
           // Borrar la cookie de salida controlada
           document.cookie = 'salidaControlada=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
@@ -128,64 +132,40 @@ export default function GameLobby() {
           return;
         }
   
-        const userId = getUserIdFromAccessToken();
-        if (!userId) {
-          console.error('⚠️ No se encontró el ID del usuario en el accessToken.');
-          return;
-        }
-  
-        if (leaderId === userId) {
-          // Eliminar la partida privada si el usuario es el líder
-          const deleteResponse = await fetchWithToken(`http://galaxy.t2dc.es:3000/private/delete/${gameId}`, {
-            method: 'DELETE',
-          });
-  
-          if (!deleteResponse.ok) {
-            console.error('❌ Error al eliminar la partida privada:', await deleteResponse.text());
-            return;
-          }
-  
-          console.log('✅ Partida privada eliminada exitosamente.');
-        } else {
-          // Eliminar al usuario de la partida privada si no es el líder
-          const deleteUserResponse = await fetchWithToken(
-            `http://galaxy.t2dc.es:3000/private/deleteUserFromPrivate/${gameId}/${userId}`,
-            {
-              method: 'DELETE',
-            }
-          );
-  
-          if (!deleteUserResponse.ok) {
-            console.error('❌ Error al eliminar al usuario de la partida privada:', await deleteUserResponse.text());
-            return;
-          }
-  
-          console.log('✅ Usuario eliminado de la partida privada exitosamente.');
-        }
-  
-        // Eliminar las cookies
-        document.cookie = 'gameId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
-        document.cookie = 'gamePasswd=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
-        console.log('✅ Cookies gameId y gamePasswd eliminadas.');
+        //Guardar en las cookies si era el leader
+        document.cookie = `leader=${leaderId}; path=/; SameSite=Lax;`;
       } catch (error) {
         console.error('❌ Error al procesar la eliminación de la partida privada o del usuario:', error);
       }
     };
   
-    const handleBeforeUnload = (event) => {
-      deletePrivateGame(); // Llama a la función para eliminar la partida o al usuario
-      //event.preventDefault();
-      //event.returnValue = ''; // Requerido para algunos navegadores
+    const handlePageHide = (event) => {
+      console.log('🚪 Evento pagehide detectado');
+      if (!event.persisted) {
+        // La página no se está poniendo en caché, es una salida real
+        console.log('🚪 Salida detectada, ejecutando deletePrivateGame');
+        deletePrivateGame();
+      } else {
+        console.log('📑 Página en caché, no se ejecutará deletePrivateGame');
+      }
     };
   
-    // Registrar el evento beforeunload
+    const handleBeforeUnload = (event) => {
+      console.log('🚪 Evento beforeunload detectado');
+      deletePrivateGame();
+    };
+  
+    // Registrar eventos
+    window.addEventListener('pagehide', handlePageHide);
     window.addEventListener('beforeunload', handleBeforeUnload);
   
-    // Limpiar el evento al desmontar el componente
+    // Limpiar eventos al desmontar el componente
     return () => {
+      console.log('🧹 Limpiando eventos');
+      window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [leaderId]); // Asegúrate de incluir leaderId como dependencia
+  }, [leaderId]);
 
   const copyCodeToClipboard = async () => {
     try {
