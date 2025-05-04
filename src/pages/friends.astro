@@ -439,13 +439,31 @@ export const onRequest = (context: any, next: any) => {
               friendsList.innerHTML = friendsData.length > 0
                 ? friendsData.map((friend) => {
                   const friendData = (friend.User1.id !== userId) ? friend.User1 : friend.User2;
-                  const lastConnectionDate = new Date(friendData.lastConnection);
-                  const hoursAgo = Math.floor((new Date().getTime() - lastConnectionDate.getTime()) / (1000 * 60 * 60)); // Horas desde la última conexión
+                  const lastConnectionDate = new Date(friendData.lastConnection); // La fecha en tu zona horaria local
+                  const lastConnectionUTC = new Date(friendData.lastConnection); // La usaremos para trabajar con UTC
+
+                  // Para mostrar en consola las horas en ambos formatos (para depuración)
+                  console.log("Last connection date (local):", lastConnectionDate);
+                  console.log("Last connection UTC hours:", lastConnectionUTC.getUTCHours());
+                  console.log("Last connection local hours:", lastConnectionDate.getHours());
+
+                  // Obtener la fecha actual en UTC
+                  const nowUTC = new Date();
+                  console.log("nowUTC", nowUTC);
+
+                  // Calcular la diferencia manteniendo ambas fechas en UTC
+                  const diffInMilliseconds = nowUTC.getTime() - lastConnectionUTC.getTime();
+                  const hours = nowUTC.getHours() - lastConnectionUTC.getUTCHours(); // Diferencia en horas
+
+                  // Calcula horas y minutos
+                  const hoursAgo = Math.floor(diffInMilliseconds / (1000 * 60 * 60)); // Horas completas
+                  const minutesAgo = Math.floor((diffInMilliseconds % (1000 * 60 * 60)) / (1000 * 60)); // Minutos restantes
+
                   return `
                     <div class="friend-item">
                       <div class="friend-info">
                         <span class="friend-name"><strong>${friendData.username}</strong></span>
-                        <span class="friend-status">En línea hace ${hoursAgo} horas</span>
+                        <span class="friend-status">En línea hace ${hours} horas y ${minutesAgo} minutos</span>
                       </div>
                       <div class="friend-actions">
                         <button class="chat-btn" data-friend-id="${friendData.id}"">
