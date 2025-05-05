@@ -453,7 +453,7 @@ export const onRequest = (context: any, next: any) => {
 
                   // Calcular la diferencia manteniendo ambas fechas en UTC
                   const diffInMilliseconds = nowUTC.getTime() - lastConnectionUTC.getTime();
-                  const hours = nowUTC.getHours() - lastConnectionUTC.getUTCHours(); // Diferencia en horas
+                  const hours = nowUTC.getUTCHours() - lastConnectionUTC.getUTCHours(); // Diferencia en horas
 
                   // Calcula horas y minutos
                   const hoursAgo = Math.floor(diffInMilliseconds / (1000 * 60 * 60)); // Horas completas
