@@ -137,7 +137,7 @@ export const onRequest = (context: any, next: any) => {
                   <div class="barra-progreso-llena" style="width: ${porcentaje}%"></div>
                 </div>
                 ${logroCompletado && !logro.achieved
-                  ? `<button class="boton-reclamar" data-logro-id="${logro.id}">Reclamar ${logro.objective_value}XP</button>`
+                  ? `<button class="boton-reclamar" data-logro-id="${logro.id}">Reclamar ${logro.experience_otorgued}XP</button>`
                   : logro.achieved
                   ? `<p class="mensaje-reclamado">Ya reclamado</p>`
                   : ''
