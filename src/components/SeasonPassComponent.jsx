@@ -165,7 +165,7 @@ function BattlePass() {
         
         <div>
           <div className="stars">
-            <span className="star-icon">★</span> {userLevel > 4500 ? 4500 : userExperience}/{experienceToNextLevel} XP
+            <span className="star-icon">★</span> {userExperience > 4500 ? 4500 : userExperience}/{experienceToNextLevel} XP
             <div className="progress-bar">
             <div
               className="progress"
