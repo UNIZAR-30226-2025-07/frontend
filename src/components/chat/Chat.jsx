@@ -7,7 +7,9 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [friendUsername, setFriendUsername] = useState("");
+  const [wsConnected, setWsConnected] = useState(false);
   const chatEndRef = useRef(null);
+  const wsRef = useRef(null);
 
   // Obtener parámetros de la URL
   const queryParams = new URLSearchParams(window.location.search);
@@ -30,7 +32,7 @@ export default function Chat() {
     }
   };
 
-  // Función para cargar mensajes directamente desde la BD
+  // Función para cargar mensajes iniciales desde la BD
   const fetchMessages = async () => {
     if (!currentUser || !friendId) return;
     
@@ -44,8 +46,13 @@ export default function Chat() {
       
       const data = await response.json();
       
+      const sortedMessages = [...data].sort((a, b) => {
+        // Si los IDs son fechas en formato string
+        return new Date(a.id) - new Date(b.id);
+      });
+      
       // Actualizamos el estado solo con los datos frescos de la BD
-      setMessages(data || []);
+      setMessages(sortedMessages || []);
     } catch (err) {
       console.error("Error:", err);
     } finally {
@@ -53,57 +60,143 @@ export default function Chat() {
     }
   };
 
-  // Cargar mensajes al inicio y cada cierto tiempo
+  // Configuración y gestión de WebSocket
+  useEffect(() => {
+    // Obtener token del localStorage
+    const token = localStorage.getItem('token');
+    
+    if (currentUser && friendId && token) {
+      console.log("🔄 Iniciando conexión WebSocket con parámetros:", { currentUser, friendId });
+      
+      // Crear conexión WebSocket con un identificador único para evitar conflictos
+      const wsUrl = `ws://galaxy.t2dc.es:8080/ws/chat?userId=${currentUser}&friendId=${friendId}&token=${token}&clientId=${Date.now()}`;
+      console.log("🔌 Conectando a:", wsUrl);
+      
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      // Evento de conexión establecida
+      ws.onopen = () => {
+        console.log("🟢 Conexión WebSocket establecida");
+        setWsConnected(true);
+        
+      };
+
+      // Evento de recepción de mensaje
+      ws.onmessage = (event) => {
+        try {
+          console.log("📩 Datos recibidos:", event.data);
+          const data = JSON.parse(event.data);
+          
+          // Si es un mensaje de ping/pong, solo lo registramos
+          if (data.type === "ping" || data.type === "pong") {
+            console.log(`Recibido mensaje de control: ${data.type}`);
+            return;
+          }
+          
+          // Si es un mensaje de chat normal, lo añadimos a la lista
+          // Verificamos que el mensaje no sea duplicado usando id
+          setMessages(prevMessages => {
+            // Comprobar si ya existe el mensaje con el mismo ID
+            const exists = prevMessages.some(msg => msg.id === data.id);
+            if (exists) {
+              console.log("🔄 Ignorando mensaje duplicado con ID:", data.id);
+              return prevMessages;
+            }
+            console.log("➕ Añadiendo nuevo mensaje:", data);
+            return [...prevMessages, data];
+          });
+        } catch (error) {
+          console.error("❌ Error al procesar mensaje WebSocket:", error);
+          console.error("Datos recibidos:", event.data);
+        }
+      };
+
+      // Evento de error
+      ws.onerror = (error) => {
+        console.error("❌ Error en WebSocket:", error);
+        setWsConnected(false);
+      };
+
+      // Evento de cierre de conexión
+      ws.onclose = (event) => {
+        console.log(`🔴 Conexión WebSocket cerrada. Código: ${event.code}, Razón: ${event.reason}`);
+        setWsConnected(false);
+        
+        // Intentar reconectar después de 5 segundos
+        setTimeout(() => {
+          console.log("🔄 Intentando reconectar WebSocket...");
+          if (wsRef.current?.readyState === WebSocket.CLOSED) {
+            // Reiniciar efecto para reconectar
+            const newWs = new WebSocket(wsUrl);
+            wsRef.current = newWs;
+            // No configuramos eventos aquí, el efecto se encargará de eso al re-ejecutarse
+          }
+        }, 5000);
+      };
+
+      // Limpiar al desmontar
+      return () => {
+        console.log("🧹 Limpiando conexión WebSocket");
+        clearInterval(heartbeatInterval);
+        
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          ws.close(1000, "Componente desmontado");
+        }
+      };
+    }
+  }, [currentUser, friendId]);
+
+  // Cargar datos iniciales
   useEffect(() => {
     if (friendId) {
       getFriendUsername(friendId);
       fetchMessages();
     }
-    
-    // Opcional: Recargar mensajes periódicamente
-    //const interval = setInterval(fetchMessages, 5000); // Cada 5 segundos
-    
-    //return () => clearInterval(interval);
   }, [currentUser, friendId]);
 
   // Scroll al final cuando hay nuevos mensajes
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView();
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Enviar mensaje (guardar en BD y luego recargar)
+  // Enviar mensaje a través de WebSocket y BD
   const sendMessage = async () => {
-    if (input.trim() !== "") {
-      const newMessage = {
-        id: Date.now(),  // Usamos el timestamp como ID único
-        id_friend_emisor: currentUser,
-        id_friend_receptor: friendId,
-        content: input,
-        date: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      };
+    if (input.trim() === "") return;
+    
+    // Crear mensaje con un ID único
+    const messageId = Date.now();
+    const newMessage = {
+      id: messageId,
+      id_friend_emisor: currentUser,
+      id_friend_receptor: friendId,
+      content: input,
+      date: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
 
-      // Enviar el mensaje a la base de datos
+    // 1. Mostrar mensaje localmente de inmediato para mejor UX
+    setMessages(prevMessages => [...prevMessages, newMessage]);
+    setInput("");
+
+    // 3. Enviar mensaje por WebSocket si está conectado
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
       try {
-        const response = await fetchWithToken(`http://galaxy.t2dc.es:3000/messages/add_message/`, {
-          method: "POST",
-          body: JSON.stringify(newMessage)
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Error en la respuesta del servidor: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.message === "Mensaje enviado correctamente.") {
-          // Si el mensaje se envió correctamente, actualizar los mensajes
-          await fetchMessages();
-          setInput("");
-        } else {
-          console.error("❌ Error al enviar el mensaje:", result.message);
-        }
-      } catch (error) {
-        console.error("❌ Error al enviar el mensaje:", error);
+        wsRef.current.send(JSON.stringify(newMessage));
+        console.log("📤 Mensaje enviado por WebSocket:", newMessage);
+      } catch (wsError) {
+        console.error("❌ Error al enviar por WebSocket:", wsError);
       }
+    } else {
+      console.warn("⚠️ WebSocket no conectado, mensaje guardado solo en BD");
+      
+      // Si el WebSocket no está conectado, podríamos volver a cargar mensajes
+      // después de un breve retraso para asegurar que ambos usuarios están sincronizados
+      setTimeout(() => {
+        if (wsRef.current?.readyState !== WebSocket.OPEN) {
+          console.log("🔄 Recargando mensajes debido a WebSocket desconectado");
+          fetchMessages();
+        }
+      }, 1000);
     }
   };
 
@@ -111,7 +204,13 @@ export default function Chat() {
 
   return (
     <div className="chat-wrapper">
-      <h2 className="chat-title">CHAT CON {friendUsername}</h2>
+      <h2 className="chat-title">
+        CHAT CON {friendUsername}
+        {wsConnected ? 
+          <span className="ws-status connected"> 🟢 Conectado</span> : 
+          <span className="ws-status disconnected"> 🔴 Reconectando...</span>
+        }
+      </h2>
 
       <div className="chat-box friends-scroll">
         {messages.length > 0 ? (
@@ -125,7 +224,7 @@ export default function Chat() {
             />
           ))
         ) : (
-          <div className="no-messages"></div>
+          <div className="no-messages">No hay mensajes aún. ¡Inicia la conversación!</div>
         )}
         <div ref={chatEndRef} />
       </div>
@@ -137,9 +236,12 @@ export default function Chat() {
           placeholder="Escribe un mensaje..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          //onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button type="submit" className="chat-button">
+        <button 
+          type="submit" 
+          className="chat-button"
+          disabled={!wsConnected && messages.length > 0}
+        >
           Enviar
         </button>
       </form>
@@ -170,3 +272,22 @@ function MessageBubble({ sender, text, time, isUser }) {
     </div>
   );
 }
+
+// Estilos adicionales para el estado de WebSocket
+// Añade estos estilos a tu archivo chat.css
+/*
+.ws-status {
+  font-size: 0.8rem;
+  margin-left: 10px;
+  font-weight: normal;
+}
+
+.ws-status.connected {
+  color: #4CAF50;
+}
+
+.ws-status.disconnected {
+  color: #F44336;
+}
+*/
+
