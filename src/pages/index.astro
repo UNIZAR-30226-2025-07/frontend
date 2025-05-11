@@ -49,6 +49,13 @@ import SeasonPassButton from "../components/SeasonPassButton.jsx";
 
   await checkPrivate(); // Verifica si el usuario está autenticado antes de cargar el contenido
   
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
   document.cookie = `skin=Aspecto Básico.png; path=/; SameSite=Lax;`
 
@@ -60,6 +67,9 @@ import SeasonPassButton from "../components/SeasonPassButton.jsx";
       console.log("Valor de accessToken:", accessToken); // Verifica el valor de la cookie
       const isAuthenticated = !!accessToken;
       if (!isAuthenticated) {
+        // Guardar un id aleatorio en la cookie
+        const uuid = generateUUID();
+        document.cookie = `PlayerID=${uuid}; path=/; SameSite=Lax;`;
         console.log("Usuario autenticado:", isAuthenticated);
         nicknameContainer.style.display = "block";
         seasonPassButtonContainer.style.display = "none"; // Oculta el botón de pase de temporada

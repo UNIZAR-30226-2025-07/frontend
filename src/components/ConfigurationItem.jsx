@@ -136,7 +136,7 @@ const ConfigurationItem = () => {
           />
         </div>
 
-        {/* Modo daltónico */}
+        {/* Modo daltónico 
         <div style={styles.settingItem}>
           <span style={styles.settingLabel}><strong>Modo daltónico (en desarrollo)</strong></span>
           <button 
@@ -153,6 +153,7 @@ const ConfigurationItem = () => {
             />
           </button>
         </div>
+        */}
       </div>
     </div>
   );
