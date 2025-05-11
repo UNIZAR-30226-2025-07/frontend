@@ -129,7 +129,7 @@ export const onRequest = (context: any, next: any) => {
             } else {
               progreso = Math.min(Number(logro.current_value/3600), Number(logro.objective_value/3600));
             }
-            const meta = Number(logro.objective_value);
+            const meta = Number(logro.objective_value/3600);
             const porcentaje = Math.min(Math.round((progreso / meta) * 100), 100);
             const logroCompletado = progreso >= meta;
     
