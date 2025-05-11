@@ -122,7 +122,13 @@ export const onRequest = (context: any, next: any) => {
           }
     
           logrosList.innerHTML = logros.map((logro) => {
-            const progreso = Math.min(Number(logro.current_value), Number(logro.objective_value));
+            let progreso = 0;
+            console.log(logro.type)
+            if (logro.type == "timePlayed") {
+              progreso = Math.min(Number(logro.current_value/3600), Number(logro.objective_value/3600));
+            } else {
+              progreso = Math.min(Number(logro.current_value/3600), Number(logro.objective_value/3600));
+            }
             const meta = Number(logro.objective_value);
             const porcentaje = Math.min(Math.round((progreso / meta) * 100), 100);
             const logroCompletado = progreso >= meta;
