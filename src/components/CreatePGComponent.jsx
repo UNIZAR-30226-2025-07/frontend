@@ -67,6 +67,9 @@ export default function GameLobby() {
         setMaxPlayers(data.privateGame.maxPlayers || 0);
         setLeaderId(data.privateGame.leader || null);
 
+        // Guardar en una cookie el id del lider
+        document.cookie = `LeaderID=${data.privateGame.leader}; path=/; SameSite=Lax;`;
+
         // Obtener los jugadores de la partida
         const playersResponse = await fetchWithToken(`http://galaxy.t2dc.es:3000/private/allPlayers/${gameId}`, {
           method: 'GET',
