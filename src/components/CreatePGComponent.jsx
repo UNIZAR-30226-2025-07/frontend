@@ -124,7 +124,7 @@ export default function GameLobby() {
         if (salidaControlada === "true") {
           // Borrar la cookie de salida controlada
           document.cookie = 'salidaControlada=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
-          document.cookie = 'gameId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
+          //document.cookie = 'gameId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
           document.cookie = 'gamePasswd=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax;';
           console.log('✅ Salida controlada, no se eliminará la partida privada o el usuario.');
           return;
