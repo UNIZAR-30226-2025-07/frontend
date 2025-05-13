@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithToken } from '../utils/fetchWithToken';
 import { getUserIdFromAccessToken } from '../utils/auth'; // Importar la función para obtener el userId de las cookies
-import '../styles/playButton.css'; // Importar el archivo CSS
+import '../styles/PlayButton.css'; // Importar el archivo CSS
 
 const ReadyButton = ({ userId }) => {
   const [isLoading, setIsLoading] = useState(false);
