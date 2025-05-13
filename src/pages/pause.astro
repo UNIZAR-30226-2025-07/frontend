@@ -1,0 +1,103 @@
+---
+export const prerender = false;
+---
+
+
+<div class="elimination-screen">
+  <div class="elimination-content">
+    <h1 class="elimination-title">El lider ha pausado la partida.</h1>
+    <p class="elimination-message">Descansa y toma un cafe.</p>
+
+    <!-- Player Stats -->
+    <div class="stats">
+      <p><strong>Puntaje:</strong> 12345</p> <!--Example score -->
+      <p><strong>Tiempo sobrevivido:</strong> 5:32</p> <!--Example time survived, delete this line if not needed -->
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button class="btn-menu" onclick="goToMainMenu()">Menu Principal</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Elimination Screen Styles */
+.elimination-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.elimination-content {
+  background: #282032;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  width: 90%;
+  max-width: 400px;
+}
+
+.elimination-title {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.elimination-message {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.stats {
+  margin-bottom: 20px;
+}
+
+.stats p {
+  margin: 5px 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-around;
+}
+
+.btn-restart, .btn-menu {
+  background: #ffcc00;
+  color: #282032;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-restart:hover, .btn-menu:hover {
+  background: #ffdd44;
+  transform: scale(1.05);
+}
+</style>
+
+<script>
+  // Declare the function on the `window` object
+  declare global {
+    interface Window {
+      goToMainMenu: () => void;
+    }
+  }
+
+  // Attach the function to the global `window` object
+  window.goToMainMenu = function () {
+    // Logic to navigate to the main menu
+    console.log("Volviendo al menú principal...");
+    window.location.href = '/'; // Example: Redirect to the home page
+  };
+</script>
