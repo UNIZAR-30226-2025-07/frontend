@@ -65,7 +65,7 @@ const PlayPrivateButton = ({ userId }) => {
 
             // Guardar la cookie "salidaControlada" antes de redirigir
             document.cookie = 'salidaControlada=true; path=/; SameSite=Lax;';
-            window.location.href = dataLink; // Redirigir al enlace
+            window.location.href = "/game"; // Redirigir al enlace
           } else {
             throw new Error('El enlace aún no está disponible.');
           }
