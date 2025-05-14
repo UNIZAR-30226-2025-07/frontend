@@ -65,6 +65,9 @@ const PlayPrivateButton = ({ userId }) => {
 
             // Guardar la cookie "salidaControlada" antes de redirigir
             document.cookie = 'salidaControlada=true; path=/; SameSite=Lax;';
+            // Esperar en tre 50 y 500 ms antes de redirigir
+            const randomDelay = Math.floor(Math.random() * (500 - 50 + 1)) + 50;
+            await new Promise((resolve) => setTimeout(resolve, randomDelay));
             window.location.href = "/game"; // Redirigir al enlace
           } else {
             throw new Error('El enlace aún no está disponible.');
