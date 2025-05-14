@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "../../styles/chat.css";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import { containsProhibitedContent, moderateContent } from "../../utils/contentModeration";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -163,6 +164,14 @@ export default function Chat() {
   // Enviar mensaje a través de WebSocket y BD
   const sendMessage = async () => {
     if (input.trim() === "") return;
+
+    // Verificar si el mensaje contiene contenido prohibido
+    if (containsProhibitedContent(input)) {
+      // Opción 1: Bloquear completamente el mensaje
+      alert("Tu mensaje contiene lenguaje inapropiado. Por favor, modifica tu mensaje.");
+      return;
+    }
+  
     
     // Crear mensaje con un ID único
     const messageId = Date.now();
