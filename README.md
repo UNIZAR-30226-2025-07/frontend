@@ -69,7 +69,6 @@ GALAXY.IO es un emocionante juego multijugador online inspirado en los populares
 
 ---
 
-Hecho con ❤️ por el equipo de CellsIO.
 
 ## 🚀 Project Structure of this Frontend Web
 
