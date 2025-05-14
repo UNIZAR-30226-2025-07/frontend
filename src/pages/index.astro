@@ -172,10 +172,24 @@ Navbar {
 }
 
 .footer-links-buttons {
-  position: relative; /* Posiciona los FooterLinks de forma absoluta */
-  top: 15vh;
+  position: fixed; /* Cambiado de absolute a fixed para mejor posicionamiento */
+  bottom: 5vh; /* Mantiene la posición en la parte inferior */
+  left: 50%; /* Centra horizontalmente */
+  transform: translateX(-50%); /* Solo transformación horizontal */
+  width: 100%; /* Ancho completo para asegurar espacio suficiente */
+  max-width: 1200px; /* Limita el ancho máximo para pantallas grandes */
+  display: flex; /* Mantiene flexbox */
+  justify-content: center; /* Mantiene centrado horizontal */
+  flex-wrap: nowrap !important; /* Fuerza que no haya wrapping */
+  gap: 10px; /* Reduce el espacio entre elementos para que quepan mejor */
+  overflow-x: auto; /* Permite scroll horizontal si es necesario */
+  padding: 0 20px; /* Añade padding a los lados */
 }
 
+.footer-links-buttons a {
+  white-space: nowrap; /* Evita que los textos de los enlaces se rompan */
+  flex-shrink: 0; /* Evita que los elementos se reduzcan */
+}
 /* Botón de Play ajustado */
 button {
   font-size: 16px;
