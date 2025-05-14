@@ -89,7 +89,7 @@ const PlayPrivateButton = ({ userId }) => {
       className={`play-button ${isLoading ? 'disabled' : ''}`} // Aplicar la clase de estilo
       disabled={isLoading} // Deshabilitar el botón mientras está cargando
     >
-      <span>{isLoading ? 'Cargando...' : 'Jugar'}</span>
+      <span>{isLoading ? 'Esperando...' : 'Jugar'}</span>
     </button>
   );
 };
