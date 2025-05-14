@@ -45,6 +45,22 @@
     .inputGroup :is(input:focus, input:valid) {
       border-color: rgb(150, 150, 200);
     }
+
+    #error-message {
+      color: #ff4d4f;
+      font-size: 0.85em;
+      margin-top: 0.5em;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #error-message.visible {
+      opacity: 1;
+    }
+    
+    .input-error {
+      border-color: #ff4d4f !important;
+    }
   </style>
 </head>
 <body>
@@ -54,37 +70,109 @@
   </div>
   
   <!-- Status message to show success -->
+  <div id="error-message"></div>
   <div id="status"></div>
 
-  <script>
-    // Define the function globally
-    function saveUsernameToCookie(): void {
+<script>
+    // Lista de palabras prohibidas
+    const PROHIBITED_WORDS = [
+      "admin", "moderator", "idiota", "tonto", "estupido", 
+      "pendejo", "puta", "cabron", "gilipollas", "mierda",
+      // Añadir más palabras prohibidas según sea necesario
+    ];
+    
+    // Función para verificar contenido prohibido
+    function containsProhibitedContent(text: String) {
+      if (!text) return false;
+      
+      const lowerText = text.toLowerCase();
+      
+      // Verificar palabras exactas o con pequeñas modificaciones
+      return PROHIBITED_WORDS.some(word => {
+        const regex = new RegExp(`(^|\\s|[.,!?:;\\-_/])${word}($|\\s|[.,!?:;\\-_/])`, 'i');
+        return regex.test(lowerText);
+      });
+    }
+    
+    // Define la función para guardar el nombre
+    function saveUsernameToCookie() {
       const input = document.getElementById('name');
       if (!input) return;
       
-      // Type assertion to tell TypeScript this is an input element
       const inputElement = input as HTMLInputElement;
-      
-      const value = inputElement.value;
+      const value = inputElement.value.trim();
       if (!value) return;
       
-      // Save in a cookie named 'username'
-      document.cookie = `username=${value}; path=/; max-age=${7 * 24 * 60 * 60}`; // Expires in 7 days
+      const errorMessage = document.getElementById('error-message');
       
-      // Show success message
+      // Validar longitud
+      if (value.length < 3) {
+        if (errorMessage) {
+          errorMessage.textContent = "El nickname debe tener al menos 3 caracteres";
+          errorMessage.classList.add('visible');
+          inputElement.classList.add('input-error');
+        }
+        return;
+      }
+      
+      // Validar contenido inapropiado
+      if (containsProhibitedContent(value)) {
+        if (errorMessage) {
+          errorMessage.textContent = "Por favor usa un nickname apropiado";
+          errorMessage.classList.add('visible');
+          inputElement.classList.add('input-error');
+        }
+        return;
+      }
+      
+      // Si pasa las validaciones, limpiar errores
+      if (errorMessage) {
+        errorMessage.textContent = "";
+        errorMessage.classList.remove('visible');
+        inputElement.classList.remove('input-error');
+      }
+      
+      // Sanitizar el valor (eliminar caracteres especiales si es necesario)
+      const sanitizedValue = value
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+      
+      // Guardar en cookie
+      document.cookie = `username=${sanitizedValue}; path=/; max-age=${7 * 24 * 60 * 60}`; // Expira en 7 días
+      
+      // Mostrar mensaje de éxito
       const status = document.getElementById('status');
       if (status) {
+        status.textContent = "¡Nickname guardado!";
+        status.style.color = "#52c41a";
         setTimeout(() => {
           status.textContent = '';
         }, 2000);
       }
     }
 
-    // Add event listener after DOM is loaded
+    // Añadir event listener después de cargar el DOM
     document.addEventListener('DOMContentLoaded', () => {
-      const nameInput = document.getElementById('name');
+      const nameInput = document.getElementById('name') as HTMLInputElement;
       if (nameInput) {
-        nameInput.addEventListener('input', saveUsernameToCookie);
+        // Cambiar a evento blur o change para validar cuando el usuario termina de escribir
+        nameInput.addEventListener('blur', saveUsernameToCookie);
+        
+        // También validar al escribir después de un breve retraso
+        let debounceTimer: NodeJS.Timeout; // Tipo correcto para setTimeout
+        nameInput.addEventListener('input', () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            // Limpiar mensaje de error cuando el usuario comienza a corregir
+            const errorMessage = document.getElementById('error-message');
+            if (errorMessage && nameInput.value.trim().length >= 3) {
+              errorMessage.classList.remove('visible');
+              nameInput.classList.remove('input-error');
+            }
+          }, 300);
+        });
       }
     });
   </script>
