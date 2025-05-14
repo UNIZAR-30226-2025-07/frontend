@@ -30,15 +30,14 @@ import SeasonPassButton from "../components/SeasonPassButton.jsx";
       </div>
       <PlayButton client:only/>
     </div>
-    
+      <div class="footer-links-buttons" id="footer-links-buttons" >
+        <FooterLinks />
+      </div>
   </div>
   
   <div class="column right-column">
     <div class="season-pass-button" id="season-pass-button-container" style="display: block;">
       <SeasonPassButton  client:only />
-    </div>
-    <div class="footer-links-buttons" id="footer-links-buttons" >
-      <FooterLinks />
     </div>
   </div>
 </main>
@@ -172,18 +171,20 @@ Navbar {
 }
 
 .footer-links-buttons {
-  position: fixed; /* Cambiado de absolute a fixed para mejor posicionamiento */
-  bottom: 5vh; /* Mantiene la posición en la parte inferior */
-  left: 50%; /* Centra horizontalmente */
-  transform: translateX(-50%); /* Solo transformación horizontal */
-  width: 100%; /* Ancho completo para asegurar espacio suficiente */
-  max-width: 1200px; /* Limita el ancho máximo para pantallas grandes */
-  display: flex; /* Mantiene flexbox */
-  justify-content: center; /* Mantiene centrado horizontal */
-  flex-wrap: nowrap !important; /* Fuerza que no haya wrapping */
-  gap: 10px; /* Reduce el espacio entre elementos para que quepan mejor */
-  overflow-x: auto; /* Permite scroll horizontal si es necesario */
-  padding: 0 20px; /* Añade padding a los lados */
+  position: absolute; /* Cambiado de relative a absolute */
+  bottom: 20px; /* Posiciona en la parte inferior */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap !important;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 10px;
+  z-index: 1000; /* Valor más alto para asegurar que esté por encima */
+  border-radius: 8px;
+  background-color: rgba(40, 32, 50, 0.6); /* Fondo semi-transparente opcional */
 }
 
 .footer-links-buttons a {
@@ -195,6 +196,7 @@ button {
   font-size: 16px;
   padding: 10px 20px;
   border-radius: 5px;
+  z-index: 1000;
   border: none;
   cursor: pointer;
 }
